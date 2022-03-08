@@ -14,54 +14,27 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_BUS_HPP_INCLUDED
-#define C_BUS_HPP_INCLUDED
+#ifndef C_GP8B_5_1_HPP_INCLUDED
+#define C_GP8B_5_1_HPP_INCLUDED
 
 #include <cstdint>
-#include <limits>
+#include "processor/C_processor.hpp"
 
 namespace codeg
 {
 
-using BitSize = uint8_t;
-
-template<codeg::BitSize TBits>
-class Bus
+class GP8B_5_1 : public codeg::ProcessorSPS1
 {
-    static_assert(TBits != 0, "TBits can't be 0 !");
-    static_assert(TBits <= sizeof(uint64_t)*8, "TBits can't be > 64 !");
 public:
-    Bus() = default;
-    explicit Bus(uint64_t value) :
-            g_bus(value & ~(std::numeric_limits<uint64_t>::max()<<TBits))
-    {}
-    ~Bus() = default;
+    GP8B_5_1() = default;
+    ~GP8B_5_1() override = default;
 
-    template<codeg::BitSize TObjBits>
-    codeg::Bus<TBits>& operator =(const codeg::Bus<TObjBits>& r)
-    {
-        this->g_bus = r.get() & ~(std::numeric_limits<uint64_t>::max()<<TBits);
-        return *this;
-    }
+    void clock() override;
 
-    [[nodiscard]] codeg::BitSize getBitSize() const
-    {
-        return TBits;
-    }
-
-    void set(uint64_t value)
-    {
-        this->g_bus = value & ~(std::numeric_limits<uint64_t>::max()<<TBits);
-    }
-    [[nodiscard]] uint64_t get() const
-    {
-        return this->g_bus;
-    }
-
-private:
-    uint64_t g_bus{0};
+    void softReset() override;
+    void hardReset() override;
 };
 
 }//end codeg
 
-#endif // C_BUS_HPP_INCLUDED
+#endif // C_GP8B_5_1_HPP_INCLUDED

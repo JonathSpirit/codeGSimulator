@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright 2021 Guillaume Guillet                                            //
+// Copyright 2022 Guillaume Guillet                                            //
 //                                                                             //
 // Licensed under the Apache License, Version 2.0 (the "License");             //
 // you may not use this file except in compliance with the License.            //
@@ -14,63 +14,54 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_string.hpp"
-#include <sstream>
+#ifndef C_MM1_HPP_INCLUDED
+#define C_MM1_HPP_INCLUDED
+
+#include "memoryModule/C_memoryModule.hpp"
+#include <vector>
 
 namespace codeg
 {
 
-size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter)
+class MM1 : public codeg::MemoryModule
 {
-    std::string buffStr;
-    std::istringstream strStream(str);
-    while (std::getline(strStream, buffStr, delimiter))
-    {
-        buff.push_back(buffStr);
-    }
-    return buff.size();
-}
+protected:
+    explicit MM1(codeg::MemorySize memorySize);
+    ~MM1() override = default;
 
-std::string ValueToHex(uint32_t val, unsigned int hexSize, bool removeExtraZero, bool removePrefix)
+public:
+    bool set(codeg::MemoryAddress address, uint8_t data) override;
+    bool set(codeg::MemoryAddress address, uint8_t* data, codeg::MemorySize dataSize) override;
+    bool get(codeg::MemoryAddress address, uint8_t& data) const override;
+    bool get(codeg::MemoryAddress startAddress, codeg::MemorySize addressCount, uint8_t* data, codeg::MemorySize dataSize) const override;
+
+    [[nodiscard]] codeg::MemoryModuleType getType() const override;
+
+private:
+    std::vector<uint8_t> g_data;
+};
+
+class MM1_64k : public codeg::MM1
 {
-    if (hexSize==0)
-    {
-        return "";
-    }
-    else if (hexSize>8)
-    {
-        hexSize = 8;
-    }
+public:
+    MM1_64k();
+    ~MM1_64k() override = default;
+};
 
-    char buff[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-    std::string out = removePrefix ? "" : "0x";
+class MM1_32k : public codeg::MM1
+{
+public:
+    MM1_32k();
+    ~MM1_32k() override = default;
+};
 
-    bool extraZeroFlag = removeExtraZero;
-
-    uint32_t mask = 0x0000000F << (4*(hexSize-1));
-    for (unsigned int i=0; i<hexSize; ++i)
-    {
-        char buffChar = buff[(val&mask) >> 4*((hexSize-1)-i)];
-        if (extraZeroFlag)
-        {
-            if (buffChar != '0')
-            {
-                extraZeroFlag = false;
-                out += buffChar;
-            }
-        }
-        else
-        {
-            out += buffChar;
-        }
-        mask >>= 4;
-    }
-    if (extraZeroFlag)
-    {//The result is only 0
-        out += '0';
-    }
-
-    return out;
-}
+class MM1_16k : public codeg::MM1
+{
+public:
+    MM1_16k();
+    ~MM1_16k() override = default;
+};
 
 }//end codeg
+
+#endif // C_MM1_HPP_INCLUDED

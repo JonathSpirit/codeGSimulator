@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright 2021 Guillaume Guillet                                            //
+// Copyright 2022 Guillaume Guillet                                            //
 //                                                                             //
 // Licensed under the Apache License, Version 2.0 (the "License");             //
 // you may not use this file except in compliance with the License.            //
@@ -14,63 +14,68 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "C_string.hpp"
-#include <sstream>
+#include "motherboard/C_GCM_5_1.hpp"
 
 namespace codeg
 {
 
-size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter)
+GCM_5_1_SPS1::GCM_5_1_SPS1()
 {
-    std::string buffStr;
-    std::istringstream strStream(str);
-    while (std::getline(strStream, buffStr, delimiter))
-    {
-        buff.push_back(buffStr);
-    }
-    return buff.size();
+    this->_g_memorySlots.push_back( {nullptr, codeg::MemoryModuleType::TYPE_MM1, 3, true, true} );
+    this->_g_memorySlots.push_back( {nullptr, codeg::MemoryModuleType::TYPE_MM1, 3, true, true} );
+
+    this->_processor._ADDSRC_CLK = CG_SIGNAL_FROM(&codeg::GCM_5_1_SPS1::signal_ADDSRC_CLK);
+    this->_processor._JMPSRC_CLK = CG_SIGNAL_FROM(&codeg::GCM_5_1_SPS1::signal_JMPSRC_CLK);
+    this->_processor._PERIPHERAL_CLK = CG_SIGNAL_FROM(&codeg::GCM_5_1_SPS1::signal_PERIPHERAL_CLK);
+    this->_processor._SELECTING_RBEXT1 = CG_SIGNAL_FROM(&codeg::GCM_5_1_SPS1::signal_SELECTING_RBEXT1);
+    this->_processor._SELECTING_RBEXT2 = CG_SIGNAL_FROM(&codeg::GCM_5_1_SPS1::signal_SELECTING_RBEXT2);
 }
 
-std::string ValueToHex(uint32_t val, unsigned int hexSize, bool removeExtraZero, bool removePrefix)
+void GCM_5_1_SPS1::softReset()
 {
-    if (hexSize==0)
-    {
-        return "";
-    }
-    else if (hexSize>8)
-    {
-        hexSize = 8;
-    }
+    this->setProgramCounter(0);
 
-    char buff[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-    std::string out = removePrefix ? "" : "0x";
+    uint8_t memData = 0;
+    this->getMemorySourceSlot()->_mem->get(0, memData);
+    this->_processor._BDATASRC.set(memData);
 
-    bool extraZeroFlag = removeExtraZero;
+    this->_processor.softReset();
+}
+void GCM_5_1_SPS1::hardReset()
+{
+    this->setProgramCounter(0);
+    this->setMemorySource(0);
 
-    uint32_t mask = 0x0000000F << (4*(hexSize-1));
-    for (unsigned int i=0; i<hexSize; ++i)
-    {
-        char buffChar = buff[(val&mask) >> 4*((hexSize-1)-i)];
-        if (extraZeroFlag)
-        {
-            if (buffChar != '0')
-            {
-                extraZeroFlag = false;
-                out += buffChar;
-            }
-        }
-        else
-        {
-            out += buffChar;
-        }
-        mask >>= 4;
-    }
-    if (extraZeroFlag)
-    {//The result is only 0
-        out += '0';
-    }
+    uint8_t memData = 0;
+    this->getMemorySourceSlot()->_mem->get(0, memData);
+    this->_processor._BDATASRC.set(memData);
 
-    return out;
+    this->_processor.hardReset();
+}
+
+void GCM_5_1_SPS1::signal_ADDSRC_CLK([[maybe_unused]] bool val)
+{
+    this->setProgramCounter( this->_g_programCounter+1 );
+
+    uint8_t memData = 0;
+    this->getMemorySourceSlot()->_mem->get(this->_g_programCounter, memData);
+    this->_processor._BDATASRC.set(memData);
+}
+void GCM_5_1_SPS1::signal_JMPSRC_CLK([[maybe_unused]] bool val)
+{
+    this->setProgramCounter(this->_processor._BJMPSRC.get());
+}
+void GCM_5_1_SPS1::signal_PERIPHERAL_CLK([[maybe_unused]] bool val)
+{
+
+}
+void GCM_5_1_SPS1::signal_SELECTING_RBEXT1([[maybe_unused]] bool val)
+{
+
+}
+void GCM_5_1_SPS1::signal_SELECTING_RBEXT2([[maybe_unused]] bool val)
+{
+
 }
 
 }//end codeg

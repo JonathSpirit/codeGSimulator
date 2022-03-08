@@ -14,54 +14,24 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_BUS_HPP_INCLUDED
-#define C_BUS_HPP_INCLUDED
+#ifndef C_SIGNAL_HPP_INCLUDED
+#define C_SIGNAL_HPP_INCLUDED
 
 #include <cstdint>
-#include <limits>
+
+#define CG_SIGNAL_FROM(func) static_cast<codeg::Signal>(func)
 
 namespace codeg
 {
 
-using BitSize = uint8_t;
-
-template<codeg::BitSize TBits>
-class Bus
+class SignalCapable
 {
-    static_assert(TBits != 0, "TBits can't be 0 !");
-    static_assert(TBits <= sizeof(uint64_t)*8, "TBits can't be > 64 !");
 public:
-    Bus() = default;
-    explicit Bus(uint64_t value) :
-            g_bus(value & ~(std::numeric_limits<uint64_t>::max()<<TBits))
-    {}
-    ~Bus() = default;
-
-    template<codeg::BitSize TObjBits>
-    codeg::Bus<TBits>& operator =(const codeg::Bus<TObjBits>& r)
-    {
-        this->g_bus = r.get() & ~(std::numeric_limits<uint64_t>::max()<<TBits);
-        return *this;
-    }
-
-    [[nodiscard]] codeg::BitSize getBitSize() const
-    {
-        return TBits;
-    }
-
-    void set(uint64_t value)
-    {
-        this->g_bus = value & ~(std::numeric_limits<uint64_t>::max()<<TBits);
-    }
-    [[nodiscard]] uint64_t get() const
-    {
-        return this->g_bus;
-    }
-
-private:
-    uint64_t g_bus{0};
+    SignalCapable() = default;
 };
+
+using Signal = void (codeg::SignalCapable::*)(bool);
 
 }//end codeg
 
-#endif // C_BUS_HPP_INCLUDED
+#endif // C_SIGNAL_HPP_INCLUDED

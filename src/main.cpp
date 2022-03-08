@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright 2021 Guillaume Guillet                                            //
+// Copyright 2022 Guillaume Guillet                                            //
 //                                                                             //
 // Licensed under the Apache License, Version 2.0 (the "License");             //
 // you may not use this file except in compliance with the License.            //
@@ -29,6 +29,7 @@
 #include "C_console.hpp"
 #include "C_error.hpp"
 #include "C_string.hpp"
+#include "memoryModule/C_MM1.hpp"
 
 #include "CMakeConfig.hpp"
 
@@ -36,35 +37,26 @@ namespace fs = std::filesystem;
 
 void printHelp()
 {
-    std::cout << "codeGGenerator usage :" << std::endl << std::endl;
+    std::cout << "codeGSimulator usage :" << std::endl << std::endl;
 
     std::cout << "Set the input file to be compiled" << std::endl;
-    std::cout << "\tcodeGGenerator --in=<path>" << std::endl << std::endl;
-
-    std::cout << "Set the output file (default is the input path+.cg)" << std::endl;
-    std::cout << "\tcodeGGenerator --out=<path>" << std::endl << std::endl;
+    std::cout << "\tcodeGSimulator --in=<path>" << std::endl << std::endl;
 
     std::cout << "Set the output log file (default is the input path+.log)" << std::endl;
-    std::cout << "\tcodeGGenerator --outLog=<path>" << std::endl << std::endl;
+    std::cout << "\tcodeGSimulator --outLog=<path>" << std::endl << std::endl;
 
     std::cout << "Don't write a log file (default a log file is writed)" << std::endl;
-    std::cout << "\tcodeGGenerator --noLog" << std::endl << std::endl;
-
-    std::cout << "Write dummy arguments/values (useful for old compatibility), default no" << std::endl;
-    std::cout << "\tcodeGGenerator --writeDummy" << std::endl << std::endl;
+    std::cout << "\tcodeGSimulator --noLog" << std::endl << std::endl;
 
     std::cout << "Print the version (and do nothing else)" << std::endl;
-    std::cout << "\tcodeGGenerator --version" << std::endl << std::endl;
+    std::cout << "\tcodeGSimulator --version" << std::endl << std::endl;
 
     std::cout << "Print the help page (and do nothing else)" << std::endl;
-    std::cout << "\tcodeGGenerator --help" << std::endl << std::endl;
-
-    std::cout << "Ask the user how he want to compile his file (interactive compiling)" << std::endl;
-    std::cout << "\tcodeGGenerator --ask" << std::endl << std::endl;
+    std::cout << "\tcodeGSimulator --help" << std::endl << std::endl;
 }
 void printVersion()
 {
-    std::cout << "codeGGenerator created by Guillaume Guillet, version " << CGS_VERSION_MAJOR << "." << CGS_VERSION_MINOR << std::endl;
+    std::cout << "codeGSimulator created by Guillaume Guillet, version " << CGS_VERSION_MAJOR << "." << CGS_VERSION_MINOR << std::endl;
 }
 
 int main(int argc, char **argv)
@@ -103,14 +95,6 @@ int main(int argc, char **argv)
         if ( commands[i] == "--noLog")
         {
             writeLogFile = false;
-            continue;
-        }
-        if ( commands[i] == "--ask")
-        {
-            std::cout << "Please insert the input path of the file"<< std::endl <<"> ";
-            std::string tmpPath;
-            std::getline(std::cin, tmpPath);
-            fileInPath = tmpPath;
             continue;
         }
 

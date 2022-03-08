@@ -14,54 +14,33 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_BUS_HPP_INCLUDED
-#define C_BUS_HPP_INCLUDED
+#ifndef C_GCM_5_1_HPP_INCLUDED
+#define C_GCM_5_1_HPP_INCLUDED
 
-#include <cstdint>
-#include <limits>
+#include "motherboard/C_motherboard.hpp"
+#include "processor/C_GP8B_5_1.hpp"
 
 namespace codeg
 {
 
-using BitSize = uint8_t;
-
-template<codeg::BitSize TBits>
-class Bus
+class GCM_5_1_SPS1 : public codeg::Motherboard, public codeg::SignalCapable
 {
-    static_assert(TBits != 0, "TBits can't be 0 !");
-    static_assert(TBits <= sizeof(uint64_t)*8, "TBits can't be > 64 !");
 public:
-    Bus() = default;
-    explicit Bus(uint64_t value) :
-            g_bus(value & ~(std::numeric_limits<uint64_t>::max()<<TBits))
-    {}
-    ~Bus() = default;
+    GCM_5_1_SPS1();
+    ~GCM_5_1_SPS1() override = default;
 
-    template<codeg::BitSize TObjBits>
-    codeg::Bus<TBits>& operator =(const codeg::Bus<TObjBits>& r)
-    {
-        this->g_bus = r.get() & ~(std::numeric_limits<uint64_t>::max()<<TBits);
-        return *this;
-    }
+    void softReset() override;
+    void hardReset() override;
 
-    [[nodiscard]] codeg::BitSize getBitSize() const
-    {
-        return TBits;
-    }
+    void signal_ADDSRC_CLK(bool val);
+    void signal_JMPSRC_CLK(bool val);
+    void signal_PERIPHERAL_CLK(bool val);
+    void signal_SELECTING_RBEXT1(bool val);
+    void signal_SELECTING_RBEXT2(bool val);
 
-    void set(uint64_t value)
-    {
-        this->g_bus = value & ~(std::numeric_limits<uint64_t>::max()<<TBits);
-    }
-    [[nodiscard]] uint64_t get() const
-    {
-        return this->g_bus;
-    }
-
-private:
-    uint64_t g_bus{0};
+    codeg::GP8B_5_1 _processor;
 };
 
 }//end codeg
 
-#endif // C_BUS_HPP_INCLUDED
+#endif // C_GCM_5_1_HPP_INCLUDED

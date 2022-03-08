@@ -14,54 +14,40 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_BUS_HPP_INCLUDED
-#define C_BUS_HPP_INCLUDED
+#ifndef C_MOTHERBOARD_HPP_INCLUDED
+#define C_MOTHERBOARD_HPP_INCLUDED
 
 #include <cstdint>
-#include <limits>
+#include "memoryModule/C_memoryModule.hpp"
 
 namespace codeg
 {
 
-using BitSize = uint8_t;
-
-template<codeg::BitSize TBits>
-class Bus
+class Motherboard : public codeg::MemoryModuleSlotCapable
 {
-    static_assert(TBits != 0, "TBits can't be 0 !");
-    static_assert(TBits <= sizeof(uint64_t)*8, "TBits can't be > 64 !");
+protected:
+    Motherboard() = default;
+    ~Motherboard() override = default;
+
 public:
-    Bus() = default;
-    explicit Bus(uint64_t value) :
-            g_bus(value & ~(std::numeric_limits<uint64_t>::max()<<TBits))
-    {}
-    ~Bus() = default;
-
-    template<codeg::BitSize TObjBits>
-    codeg::Bus<TBits>& operator =(const codeg::Bus<TObjBits>& r)
+    bool setProgramCounter(codeg::MemoryAddress address)
     {
-        this->g_bus = r.get() & ~(std::numeric_limits<uint64_t>::max()<<TBits);
-        return *this;
+        this->_g_programCounter = address;
+        return true;
+    }
+    [[nodiscard]] codeg::MemoryAddress getProgramCounter() const
+    {
+        return this->_g_programCounter;
     }
 
-    [[nodiscard]] codeg::BitSize getBitSize() const
-    {
-        return TBits;
-    }
+    virtual void softReset() = 0;
+    virtual void hardReset() = 0;
 
-    void set(uint64_t value)
-    {
-        this->g_bus = value & ~(std::numeric_limits<uint64_t>::max()<<TBits);
-    }
-    [[nodiscard]] uint64_t get() const
-    {
-        return this->g_bus;
-    }
-
-private:
-    uint64_t g_bus{0};
+protected:
+    std::vector<codeg::MemoryModuleSlot> _g_memorySlots;
+    codeg::MemoryAddress _g_programCounter{0};
 };
 
 }//end codeg
 
-#endif // C_BUS_HPP_INCLUDED
+#endif //C_MOTHERBOARD_HPP_INCLUDED
