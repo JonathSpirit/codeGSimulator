@@ -32,6 +32,8 @@ public:
     void softReset() override;
     void hardReset() override;
 
+    uint8_t updateDataSource() override;
+
     void signal_ADDSRC_CLK(bool val);
     void signal_JMPSRC_CLK(bool val);
     void signal_PERIPHERAL_CLK(bool val);

@@ -19,39 +19,51 @@
 
 #include <cstdint>
 #include <limits>
+#include <map>
+#include "C_error.hpp"
 
 namespace codeg
 {
 
 using BitSize = uint8_t;
 
-template<codeg::BitSize TBits>
 class Bus
 {
-    static_assert(TBits != 0, "TBits can't be 0 !");
-    static_assert(TBits <= sizeof(uint64_t)*8, "TBits can't be > 64 !");
 public:
-    Bus() = default;
-    explicit Bus(uint64_t value) :
-            g_bus(value & ~(std::numeric_limits<uint64_t>::max()<<TBits))
-    {}
+    explicit Bus(codeg::BitSize bitSize) :
+            g_bus(0),
+            g_bitSize(bitSize)
+    {
+        if ( (bitSize == 0) || (bitSize > sizeof(uint64_t)*8) )
+        {
+            throw codeg::Error("bitSize can't be 0 or > 64");
+        }
+    }
+    explicit Bus(codeg::BitSize bitSize, uint64_t value) :
+            g_bus(value & ~(std::numeric_limits<uint64_t>::max()<<bitSize)),
+            g_bitSize(bitSize)
+    {
+        if ( (bitSize == 0) || (bitSize > sizeof(uint64_t)*8) )
+        {
+            throw codeg::Error("bitSize can't be 0 or > 64");
+        }
+    }
     ~Bus() = default;
 
-    template<codeg::BitSize TObjBits>
-    codeg::Bus<TBits>& operator =(const codeg::Bus<TObjBits>& r)
+    codeg::Bus& operator =(const codeg::Bus& r)
     {
-        this->g_bus = r.get() & ~(std::numeric_limits<uint64_t>::max()<<TBits);
+        this->g_bus = r.get() & ~(std::numeric_limits<uint64_t>::max()<<this->g_bitSize);
         return *this;
     }
 
     [[nodiscard]] codeg::BitSize getBitSize() const
     {
-        return TBits;
+        return this->g_bitSize;
     }
 
     void set(uint64_t value)
     {
-        this->g_bus = value & ~(std::numeric_limits<uint64_t>::max()<<TBits);
+        this->g_bus = value & ~(std::numeric_limits<uint64_t>::max()<<this->g_bitSize);
     }
     [[nodiscard]] uint64_t get() const
     {
@@ -59,7 +71,55 @@ public:
     }
 
 private:
-    uint64_t g_bus{0};
+    uint64_t g_bus;
+    codeg::BitSize g_bitSize;
+};
+
+class BusMap
+{
+public:
+    BusMap() = default;
+    ~BusMap() = default;
+
+    [[nodiscard]] std::size_t getSize() const
+    {
+        return this->g_data.size();
+    }
+
+    template<class... Types>
+    bool add(const std::string& key, Types... args)
+    {
+        return this->g_data.emplace( std::make_pair(key, args...) ).second;
+    }
+
+    [[nodiscard]] bool exist(const std::string& key) const
+    {
+        return this->g_data.find(key) != this->g_data.cend();
+    }
+
+    [[nodiscard]] const codeg::Bus& get(const std::string& key) const
+    {
+        auto it = this->g_data.find(key);
+
+        if (it != this->g_data.cend())
+        {
+            return it->second;
+        }
+        throw codeg::Error("Unknown bus : "+key);
+    }
+    [[nodiscard]] codeg::Bus& get(const std::string& key)
+    {
+        auto it = this->g_data.find(key);
+
+        if (it != this->g_data.cend())
+        {
+            return it->second;
+        }
+        throw codeg::Error("Unknown bus : "+key);
+    }
+
+private:
+    std::map<std::string, codeg::Bus> g_data;
 };
 
 }//end codeg

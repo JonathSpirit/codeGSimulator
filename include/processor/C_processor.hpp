@@ -22,13 +22,44 @@
 #include "C_bus.hpp"
 #include "C_signal.hpp"
 
+#define CG_PROC_SPS1_BUS_BJMPSRC "BJMPSRC"
+#define CG_PROC_SPS1_BUS_BWRITE1 "BWRITE1"
+#define CG_PROC_SPS1_BUS_BWRITE2 "BWRITE2"
+#define CG_PROC_SPS1_BUS_BREAD1 "BREAD1"
+#define CG_PROC_SPS1_BUS_BREAD2 "BREAD2"
+#define CG_PROC_SPS1_BUS_NUMBER "NUMBER"
+#define CG_PROC_SPS1_BUS_BDATASRC "BDATASRC"
+#define CG_PROC_SPS1_BUS_BPCS "BPCS"
+
+#define CG_PROC_SPS1_SIGNAL_ADDSRC_CLK "ADDSRC_CLK"
+#define CG_PROC_SPS1_SIGNAL_JMPSRC_CLK "JMPSRC_CLK"
+#define CG_PROC_SPS1_SIGNAL_PERIPHERAL_CLK "PERIPHERAL_CLK"
+#define CG_PROC_SPS1_SIGNAL_SELECTING_RBEXT1 "SELECTING_RBEXT1"
+#define CG_PROC_SPS1_SIGNAL_SELECTING_RBEXT2 "SELECTING_RBEXT2"
+
 namespace codeg
 {
 
 class ProcessorSPS1 : public codeg::MemoryModuleSlotCapable
 {
 public:
-    ProcessorSPS1() = default;
+    ProcessorSPS1()
+    {
+        this->_busses.add(CG_PROC_SPS1_BUS_BJMPSRC, 24);
+        this->_busses.add(CG_PROC_SPS1_BUS_BWRITE1, 8);
+        this->_busses.add(CG_PROC_SPS1_BUS_BWRITE2, 8);
+        this->_busses.add(CG_PROC_SPS1_BUS_BREAD1, 8);
+        this->_busses.add(CG_PROC_SPS1_BUS_BREAD2, 8);
+        this->_busses.add(CG_PROC_SPS1_BUS_NUMBER, 8);
+        this->_busses.add(CG_PROC_SPS1_BUS_BDATASRC, 8);
+        this->_busses.add(CG_PROC_SPS1_BUS_BPCS, 6);
+
+        this->_signals.add(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK);
+        this->_signals.add(CG_PROC_SPS1_SIGNAL_JMPSRC_CLK);
+        this->_signals.add(CG_PROC_SPS1_SIGNAL_PERIPHERAL_CLK);
+        this->_signals.add(CG_PROC_SPS1_SIGNAL_SELECTING_RBEXT1);
+        this->_signals.add(CG_PROC_SPS1_SIGNAL_SELECTING_RBEXT2);
+    }
     ~ProcessorSPS1() override = default;
 
     virtual void clock() = 0;
@@ -36,36 +67,8 @@ public:
     virtual void softReset() = 0;
     virtual void hardReset() = 0;
 
-    //24 bits bus for address jump control.
-    codeg::Bus<24> _BJMPSRC{0};
-
-    //8 bits bus for general output pins.
-    codeg::Bus<8> _BWRITE1{0};
-    codeg::Bus<8> _BWRITE2{0};
-    //8 bits bus for general input pins.
-    codeg::Bus<8> _BREAD1{0};
-    codeg::Bus<8> _BREAD2{0};
-
-    //8 bits bus for number control.
-    codeg::Bus<8> _NUMBER{0};
-
-    //8 bits bus for source memory data.
-    codeg::Bus<8> _BDATASRC{0};
-
-    //6 bits bus for choosing a peripheral.
-    codeg::Bus<6> _BPCS{0};
-
-    //next address clock for source memory.
-    codeg::Signal _ADDSRC_CLK{nullptr};
-    //jumping to address clock for source memory.
-    codeg::Signal _JMPSRC_CLK{nullptr};
-    //pulse for selected peripheral.
-    codeg::Signal _PERIPHERAL_CLK{nullptr};
-
-    //read bus extern 1 selection (active low).
-    codeg::Signal _SELECTING_RBEXT1{nullptr};
-    //read bus extern 2 selection (active low).
-    codeg::Signal _SELECTING_RBEXT2{nullptr};
+    codeg::BusMap _busses;
+    codeg::SignalMap _signals;
 };
 
 }//end codeg

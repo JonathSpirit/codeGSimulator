@@ -24,20 +24,17 @@ GCM_5_1_SPS1::GCM_5_1_SPS1()
     this->_g_memorySlots.push_back( {nullptr, codeg::MemoryModuleType::TYPE_MM1, 3, true, true} );
     this->_g_memorySlots.push_back( {nullptr, codeg::MemoryModuleType::TYPE_MM1, 3, true, true} );
 
-    this->_processor._ADDSRC_CLK = CG_SIGNAL_FROM(&codeg::GCM_5_1_SPS1::signal_ADDSRC_CLK);
-    this->_processor._JMPSRC_CLK = CG_SIGNAL_FROM(&codeg::GCM_5_1_SPS1::signal_JMPSRC_CLK);
-    this->_processor._PERIPHERAL_CLK = CG_SIGNAL_FROM(&codeg::GCM_5_1_SPS1::signal_PERIPHERAL_CLK);
-    this->_processor._SELECTING_RBEXT1 = CG_SIGNAL_FROM(&codeg::GCM_5_1_SPS1::signal_SELECTING_RBEXT1);
-    this->_processor._SELECTING_RBEXT2 = CG_SIGNAL_FROM(&codeg::GCM_5_1_SPS1::signal_SELECTING_RBEXT2);
+    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).attach(this, &codeg::GCM_5_1_SPS1::signal_ADDSRC_CLK);
+    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_JMPSRC_CLK).attach(this, &codeg::GCM_5_1_SPS1::signal_JMPSRC_CLK);
+    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_PERIPHERAL_CLK).attach(this, &codeg::GCM_5_1_SPS1::signal_PERIPHERAL_CLK);
+    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_SELECTING_RBEXT1).attach(this, &codeg::GCM_5_1_SPS1::signal_SELECTING_RBEXT1);
+    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_SELECTING_RBEXT2).attach(this, &codeg::GCM_5_1_SPS1::signal_SELECTING_RBEXT2);
 }
 
 void GCM_5_1_SPS1::softReset()
 {
     this->setProgramCounter(0);
-
-    uint8_t memData = 0;
-    this->getMemorySourceSlot()->_mem->get(0, memData);
-    this->_processor._BDATASRC.set(memData);
+    this->updateDataSource();
 
     this->_processor.softReset();
 }
@@ -45,25 +42,27 @@ void GCM_5_1_SPS1::hardReset()
 {
     this->setProgramCounter(0);
     this->setMemorySource(0);
-
-    uint8_t memData = 0;
-    this->getMemorySourceSlot()->_mem->get(0, memData);
-    this->_processor._BDATASRC.set(memData);
+    this->updateDataSource();
 
     this->_processor.hardReset();
+}
+
+uint8_t GCM_5_1_SPS1::updateDataSource()
+{
+    uint8_t memData = 0;
+    this->getMemorySourceSlot()->_mem->get(this->getProgramCounter(), memData);
+    this->_processor._busses.get(CG_PROC_SPS1_BUS_BDATASRC).set(memData);
+    return memData;
 }
 
 void GCM_5_1_SPS1::signal_ADDSRC_CLK([[maybe_unused]] bool val)
 {
     this->setProgramCounter( this->_g_programCounter+1 );
-
-    uint8_t memData = 0;
-    this->getMemorySourceSlot()->_mem->get(this->_g_programCounter, memData);
-    this->_processor._BDATASRC.set(memData);
+    this->updateDataSource();
 }
 void GCM_5_1_SPS1::signal_JMPSRC_CLK([[maybe_unused]] bool val)
 {
-    this->setProgramCounter(this->_processor._BJMPSRC.get());
+    this->setProgramCounter(this->_processor._busses.get(CG_PROC_SPS1_BUS_BJMPSRC).get());
 }
 void GCM_5_1_SPS1::signal_PERIPHERAL_CLK([[maybe_unused]] bool val)
 {
