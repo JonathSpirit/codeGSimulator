@@ -1,0 +1,43 @@
+[info](09.03.2022 - 11:16:48) Step 1 : Reading and compiling ...
+[info](09.03.2022 - 11:16:48) Step 1 : OK !
+
+[info](09.03.2022 - 11:16:48) Compiled size : 258 bytes
+
+[info](09.03.2022 - 11:16:48) Step 2 : Resolving jumpList ...
+[info](09.03.2022 - 11:16:48) 	Label "MAIN" with 1 jump points
+[info](09.03.2022 - 11:16:48) 	Label "SEND_LOOP" with 1 jump points
+[info](09.03.2022 - 11:16:48) 	Label "WAIT_TRANSMIT_2" with 1 jump points
+[info](09.03.2022 - 11:16:48) 	Label "%%F4" with 1 jump points
+[info](09.03.2022 - 11:16:48) 	Label "%%E4" with 0 jump points
+[info](09.03.2022 - 11:16:48) 	Label "%%F3" with 1 jump points
+[info](09.03.2022 - 11:16:48) 	Label "%%E3" with 0 jump points
+[info](09.03.2022 - 11:16:48) 	Label "%%F2" with 1 jump points
+[info](09.03.2022 - 11:16:48) 	Label "WAIT_TRANSMIT" with 1 jump points
+[info](09.03.2022 - 11:16:48) 	Label "%%F5" with 1 jump points
+[info](09.03.2022 - 11:16:48) 	Label "%%E5" with 0 jump points
+[info](09.03.2022 - 11:16:48) 	Label "%%E2" with 1 jump points
+[info](09.03.2022 - 11:16:48) 	Label "%%F1" with 1 jump points
+[info](09.03.2022 - 11:16:48) 	Label "%%E1" with 0 jump points
+[info](09.03.2022 - 11:16:48) Step 2 : OK !
+
+[info](09.03.2022 - 11:16:48) Step 3 : Resolving pools ...
+[info](09.03.2022 - 11:16:48) Fixed start address only ...
+[info](09.03.2022 - 11:16:48) OK
+[info](09.03.2022 - 11:16:48) Memory mapping ...
+[info](09.03.2022 - 11:16:48) OK
+[info](09.03.2022 - 11:16:48) Dynamic start address only ...
+[info](09.03.2022 - 11:16:48) Working on pool "global":
+[info](09.03.2022 - 11:16:48) 	variable size: 3
+[info](09.03.2022 - 11:16:48) 	used size: 3
+[info](09.03.2022 - 11:16:48) 	total size: 3
+[info](09.03.2022 - 11:16:48) 	Check if the pool can be applied ...
+[info](09.03.2022 - 11:16:48) 	Pool applied at address 0 !
+[info](09.03.2022 - 11:16:48) OK
+[info](09.03.2022 - 11:16:48) Memory used size : 3 bytes
+
+[info](09.03.2022 - 11:16:48) Step 3 : OK !
+
+[info](09.03.2022 - 11:16:48) Writing codeG file (binary size : 258 bytes) ...
+[info](09.03.2022 - 11:16:48) Writing readable codeG file ...
+[info](09.03.2022 - 11:16:48) OK !
+

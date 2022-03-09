@@ -30,6 +30,7 @@
 #include "C_error.hpp"
 #include "C_string.hpp"
 #include "memoryModule/C_MM1.hpp"
+#include "motherboard/C_GCM_5_1.hpp"
 
 #include "CMakeConfig.hpp"
 
@@ -128,14 +129,15 @@ int main(int argc, char **argv)
     }
     if (fileLogOutPath.empty() && writeLogFile )
     {
-        fileLogOutPath = fileInPath += ".log";
+        fileLogOutPath = fileInPath;
+        fileLogOutPath += ".log";
     }
 
     ///Opening files
     std::ifstream fileIn(fileInPath, std::ios::binary );
     if ( !fileIn )
     {
-        std::cout << "Can't read the file \"" << fileInPath << "\"" << std::endl;
+        std::cout << "Can't read the file " << fileInPath << std::endl;
         return -1;
     }
 
@@ -143,24 +145,40 @@ int main(int argc, char **argv)
     {
         if ( !codeg::LogOpen(fileLogOutPath) )
         {
-            std::cout << "Can't write the file \"" << fileLogOutPath << "\"" << std::endl;
+            std::cout << "Can't write the file " << fileLogOutPath << std::endl;
             return -1;
         }
     }
 
     std::cout << std::endl;
 
-    std::string readedLine;
+    std::string stringLine;
 
     try
     {
-        ///First step reading and compiling
         codeg::ConsoleInfoWrite("Reading the file ...");
 
-        /*while( data._reader.getline(readedLine) )
-        {
+        auto* buffer = new uint8_t[0xFFFF];
+        auto finalSize = fileIn.readsome(reinterpret_cast<char*>(buffer), 0xFFFF);
 
-        }*/
+        codeg::ConsoleInfoWrite("Data size : "+std::to_string(finalSize)+" bytes");
+
+
+        codeg::ConsoleInfoWrite("Creating memory module size for the source ...");
+        std::shared_ptr<codeg::MemoryModule> memory = std::make_shared<codeg::MM1_64k>();
+        memory->set(0, buffer, finalSize);
+        delete[] buffer;
+
+        codeg::ConsoleInfoWrite("Creating the motherboard and plug the memory module ...");
+        codeg::GCM_5_1_SPS1 motherboard;
+        motherboard.memoryPlug(motherboard.getMemorySourceIndex(), memory);
+
+        codeg::ConsoleInfoWrite("ok !");
+    }
+    catch (const codeg::Error& e)
+    {
+        codeg::ConsoleErrorWrite("error : "+std::string(e.what()));
+        return -1;
     }
     catch (const std::exception& e)
     {

@@ -55,14 +55,20 @@ uint8_t GCM_5_1_SPS1::updateDataSource()
     return memData;
 }
 
-void GCM_5_1_SPS1::signal_ADDSRC_CLK([[maybe_unused]] bool val)
+void GCM_5_1_SPS1::signal_ADDSRC_CLK(bool val)
 {
-    this->setProgramCounter( this->_g_programCounter+1 );
-    this->updateDataSource();
+    if (val)
+    {
+        this->setProgramCounter( this->_g_programCounter+1 );
+        this->updateDataSource();
+    }
 }
-void GCM_5_1_SPS1::signal_JMPSRC_CLK([[maybe_unused]] bool val)
+void GCM_5_1_SPS1::signal_JMPSRC_CLK(bool val)
 {
-    this->setProgramCounter(this->_processor._busses.get(CG_PROC_SPS1_BUS_BJMPSRC).get());
+    if (val)
+    {
+        this->setProgramCounter(this->_processor._busses.get(CG_PROC_SPS1_BUS_BJMPSRC).get());
+    }
 }
 void GCM_5_1_SPS1::signal_PERIPHERAL_CLK([[maybe_unused]] bool val)
 {
