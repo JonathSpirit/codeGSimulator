@@ -19,6 +19,7 @@
 
 #include <cstdint>
 #include "memoryModule/C_MM1.hpp"
+#include "processor/C_alu.hpp"
 #include "C_bus.hpp"
 #include "C_signal.hpp"
 
@@ -69,6 +70,7 @@ public:
 
     codeg::BusMap _busses;
     codeg::SignalMap _signals;
+    std::shared_ptr<codeg::Alu> _alu;
 };
 
 }//end codeg

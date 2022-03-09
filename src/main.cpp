@@ -25,12 +25,12 @@
 #include <limits>
 #include <filesystem>
 
-#include "C_target.hpp"
 #include "C_console.hpp"
 #include "C_error.hpp"
 #include "C_string.hpp"
 #include "memoryModule/C_MM1.hpp"
 #include "motherboard/C_GCM_5_1.hpp"
+#include "processor/C_ALUminium_1_1.hpp"
 
 #include "CMakeConfig.hpp"
 
@@ -172,6 +172,8 @@ int main(int argc, char **argv)
         codeg::ConsoleInfoWrite("Creating the motherboard and plug the memory module ...");
         codeg::GCM_5_1_SPS1 motherboard;
         motherboard.memoryPlug(motherboard.getMemorySourceIndex(), memory);
+
+        motherboard._processor._alu = std::make_shared<codeg::Aluminium_1_1>();
 
         codeg::ConsoleInfoWrite("ok !");
     }

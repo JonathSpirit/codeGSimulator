@@ -21,7 +21,24 @@ namespace codeg
 
 void GP8B_5_1::clock()
 {
+    switch (this->g_stat)
+    {
+    case STAT_SYNC_BIT:
+        this->g_stat = STAT_INSTRUCTION_SET;
+        break;
+    case STAT_INSTRUCTION_SET:
+        this->g_instruction = this->_busses.get(CG_PROC_SPS1_BUS_BDATASRC).get();
+        this->_signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).call(true);
+        this->_signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).call(false);
 
+        this->g_stat = STAT_EXECUTION;
+        break;
+    case STAT_EXECUTION:
+        this->executeInstruction();
+
+        this->g_stat = STAT_SYNC_BIT;
+        break;
+    }
 }
 
 void GP8B_5_1::softReset()
@@ -29,6 +46,11 @@ void GP8B_5_1::softReset()
 }
 void GP8B_5_1::hardReset()
 {
+}
+
+void GP8B_5_1::executeInstruction()
+{
+
 }
 
 }//end codeg

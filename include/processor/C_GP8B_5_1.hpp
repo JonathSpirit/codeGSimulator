@@ -26,6 +26,16 @@ namespace codeg
 class GP8B_5_1 : public codeg::ProcessorSPS1
 {
 public:
+    enum Stat
+    {
+        STAT_SYNC_BIT,
+        STAT_INSTRUCTION_SET,
+        STAT_EXECUTION
+
+        //STAT_WAITING
+        //STAT_RAMWRITE_OR_END
+    };
+
     GP8B_5_1() = default;
     ~GP8B_5_1() override = default;
 
@@ -33,6 +43,12 @@ public:
 
     void softReset() override;
     void hardReset() override;
+
+private:
+    void executeInstruction();
+
+    Stat g_stat{STAT_SYNC_BIT};
+    uint8_t g_instruction{0};
 };
 
 }//end codeg

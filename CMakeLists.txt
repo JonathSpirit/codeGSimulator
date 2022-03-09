@@ -86,6 +86,7 @@ target_sources(${PROJECT_NAME} PUBLIC "src/memoryModule/C_MM1.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/motherboard/C_GCM_5_1.cpp")
 
 target_sources(${PROJECT_NAME} PUBLIC "src/processor/C_GP8B_5_1.cpp")
+target_sources(${PROJECT_NAME} PUBLIC "src/processor/C_ALUminium_1_1.cpp")
 
 #Header files
 target_sources(${PROJECT_NAME} PUBLIC "include/main.hpp")
@@ -93,6 +94,7 @@ target_sources(${PROJECT_NAME} PUBLIC "include/C_console.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_string.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_bus.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_signal.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/C_codeg.hpp")
 
 target_sources(${PROJECT_NAME} PUBLIC "include/memoryModule/C_memoryModule.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/memoryModule/C_MM1.hpp")
@@ -102,6 +104,8 @@ target_sources(${PROJECT_NAME} PUBLIC "include/motherboard/C_GCM_5_1.hpp")
 
 target_sources(${PROJECT_NAME} PUBLIC "include/processor/C_processor.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/processor/C_GP8B_5_1.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/processor/C_alu.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/processor/C_ALUminium_1_1.hpp")
 
 #Add test
 #add_test(NAME "CompilingTestFile" COMMAND ${PROJECT_NAME} "--in=example/test")

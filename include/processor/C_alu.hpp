@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright 2021 Guillaume Guillet                                            //
+// Copyright 2022 Guillaume Guillet                                            //
 //                                                                             //
 // Licensed under the Apache License, Version 2.0 (the "License");             //
 // you may not use this file except in compliance with the License.            //
@@ -14,22 +14,33 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_TARGET_H_INCLUDED
-#define C_TARGET_H_INCLUDED
+#ifndef C_ALU_HPP_INCLUDED
+#define C_ALU_HPP_INCLUDED
 
 #include <cstdint>
 
 namespace codeg
 {
 
-enum TargetType : uint8_t
+class Alu
 {
-    TARGET_NULL = 0,
+public:
+    Alu() = default;
+    virtual ~Alu() = default;
 
-    TARGET_PERIPHERAL,
-    TARGET_OPERATION
+    virtual void setOperationLeft(uint8_t val) = 0;
+    virtual void setOperation(uint8_t val) = 0;
+    virtual void setOperationRight(uint8_t val) = 0;
+
+    [[nodiscard]] uint8_t getResult() const
+    {
+        return this->_g_result;
+    }
+
+protected:
+    uint8_t _g_result{0};
 };
 
 }//end codeg
 
-#endif // C_TARGET_H_INCLUDED
+#endif //C_ALU_HPP_INCLUDED
