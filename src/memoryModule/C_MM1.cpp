@@ -21,7 +21,8 @@ namespace codeg
 
 ///MM1
 MM1::MM1(codeg::MemorySize memorySize) :
-        codeg::MemoryModule(memorySize)
+        codeg::MemoryModule(memorySize),
+        g_data(memorySize, 0)
 {
 }
 

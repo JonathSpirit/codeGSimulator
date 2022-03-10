@@ -56,15 +56,15 @@ void GP8B_5_1::clock()
 
 void GP8B_5_1::softReset()
 {
+    this->g_stat = STAT_SYNC_BIT;
 }
 void GP8B_5_1::hardReset()
 {
+    this->g_stat = STAT_SYNC_BIT;
 }
 
 void GP8B_5_1::executeInstruction()
 {
-
-
     switch( static_cast<codeg::CodegBinaryRev1>(this->g_instruction&CG_CODEGBINARYREV1_OPCODE_MASK) )
     {
     case CodegBinaryRev1::OPCODE_BWRITE1_CLK:
@@ -125,12 +125,6 @@ void GP8B_5_1::executeInstruction()
         this->g_ramAddress &=~ 0xFF00;
         this->g_ramAddress |= static_cast<uint16_t>(this->g_arguments)<<8;
         break;
-    case CodegBinaryRev1::OPCODE_SPI_CLK:
-        break;
-    case CodegBinaryRev1::OPCODE_BCFG_SPI_CLK:
-        break;
-    case CodegBinaryRev1::OPCODE_STICK:
-        break;
     case CodegBinaryRev1::OPCODE_IF:
         if (this->g_arguments)
         {
@@ -151,6 +145,9 @@ void GP8B_5_1::executeInstruction()
             this->getMemorySlot(0)->_mem->set(this->g_ramAddress, this->g_arguments);
         }
         break;
+    case CodegBinaryRev1::OPCODE_SPI_CLK:
+    case CodegBinaryRev1::OPCODE_BCFG_SPI_CLK:
+    case CodegBinaryRev1::OPCODE_STICK:
     case CodegBinaryRev1::OPCODE_LTICK:
         break;
     }

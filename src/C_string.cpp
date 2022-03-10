@@ -20,6 +20,32 @@
 namespace codeg
 {
 
+std::string CleanString(const std::string& str)
+{
+    std::string result;
+    bool extraSpace = true;
+
+    result.reserve(str.size());
+
+    for (std::size_t i=0; i<str.size(); ++i)
+    {
+        if ( str[i] == ' ' )
+        {
+            if (!extraSpace)
+            {
+                result += ' ';
+                extraSpace = true;
+            }
+        }
+        else
+        {
+            result += str[i];
+            extraSpace = false;
+        }
+    }
+
+    return result;
+}
 size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter)
 {
     std::string buffStr;

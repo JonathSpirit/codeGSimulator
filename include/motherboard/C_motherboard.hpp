@@ -46,7 +46,6 @@ public:
     virtual uint8_t updateDataSource() = 0;
 
 protected:
-    std::vector<codeg::MemoryModuleSlot> _g_memorySlots;
     codeg::MemoryAddress _g_programCounter{0};
 };
 

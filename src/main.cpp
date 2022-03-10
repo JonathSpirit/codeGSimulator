@@ -163,7 +163,6 @@ int main(int argc, char **argv)
 
         codeg::ConsoleInfoWrite("Data size : "+std::to_string(finalSize)+" bytes");
 
-
         codeg::ConsoleInfoWrite("Creating memory module size for the source ...");
         std::shared_ptr<codeg::MemoryModule> memory = std::make_shared<codeg::MM1_64k>();
         memory->set(0, buffer, finalSize);
@@ -176,6 +175,130 @@ int main(int argc, char **argv)
         motherboard._processor._alu = std::make_shared<codeg::Aluminium_1_1>();
 
         codeg::ConsoleInfoWrite("ok !");
+
+        codeg::ConsoleInfoWrite("Waiting user input, ");
+
+        std::string userCommand;
+        do
+        {
+            std::cout << ">";
+            std::getline(std::cin, userCommand);
+
+            userCommand = codeg::CleanString(userCommand);
+            std::vector<std::string> splitedUserCommand;
+            codeg::Split(userCommand, splitedUserCommand, ' ');
+
+            codeg::ConsoleInfoWrite("user command : \""+userCommand+"\"");
+
+            if (userCommand == "help")
+            {
+                std::cout << "exit -> exit the application\n"
+                          << "read pc -> read the program counter\n"
+                          << "read mem [\"m\"/\"p\"] [slot] [address] -> read in a motherboard/processor memory slot at address\n";
+            }
+            else if (splitedUserCommand.size() > 1)
+            {
+                if (splitedUserCommand[0] == "read")
+                {
+                    if (splitedUserCommand[1] == "pc")
+                    {
+                        if (splitedUserCommand.size() == 2)
+                        {
+                            codeg::ConsoleInfoWrite(std::to_string(motherboard.getProgramCounter()) );
+                        }
+                        else
+                        {
+                            codeg::ConsoleErrorWrite("usage: read pc");
+                        }
+                    }
+                    else if (splitedUserCommand[1] == "mem")
+                    {
+                        if (splitedUserCommand.size() == 5)
+                        {
+                            if (splitedUserCommand[2] == "m")
+                            {
+                                std::size_t slotValue = std::strtoul(splitedUserCommand[3].c_str(), nullptr, 0);
+
+                                const codeg::MemoryModuleSlot* slot = motherboard.getMemorySlot(slotValue);
+                                if (slot)
+                                {
+                                    if (slot->_mem)
+                                    {
+                                        codeg::MemoryAddress addressValue = std::strtoul(splitedUserCommand[4].c_str(), nullptr, 0);
+
+                                        uint8_t data;
+                                        if ( slot->_mem->get(addressValue, data) )
+                                        {
+                                            codeg::ConsoleInfoWrite(std::to_string(data));
+                                        }
+                                        else
+                                        {
+                                            codeg::ConsoleErrorWrite("address out of range (max: "+std::to_string(slot->_mem->getMemorySize())+")");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        codeg::ConsoleErrorWrite("no memory plugged in this slot");
+                                    }
+                                }
+                                else
+                                {
+                                    codeg::ConsoleErrorWrite("unknown slot "+splitedUserCommand[3]);
+                                }
+                            }
+                            else if (splitedUserCommand[2] == "p")
+                            {
+                                std::size_t slotValue = std::strtoul(splitedUserCommand[3].c_str(), nullptr, 0);
+
+                                const codeg::MemoryModuleSlot* slot = motherboard._processor.getMemorySlot(slotValue);
+                                if (slot)
+                                {
+                                    if (slot->_mem)
+                                    {
+                                        codeg::MemoryAddress addressValue = std::strtoul(splitedUserCommand[4].c_str(), nullptr, 0);
+
+                                        uint8_t data;
+                                        if ( slot->_mem->get(addressValue, data) )
+                                        {
+                                            codeg::ConsoleInfoWrite(std::to_string(data));
+                                        }
+                                        else
+                                        {
+                                            codeg::ConsoleErrorWrite("address out of range (max: "+std::to_string(slot->_mem->getMemorySize())+")");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        codeg::ConsoleErrorWrite("no memory plugged in this slot");
+                                    }
+                                }
+                                else
+                                {
+                                    codeg::ConsoleErrorWrite("unknown slot "+splitedUserCommand[3]);
+                                }
+                            }
+                            else
+                            {
+                                codeg::ConsoleErrorWrite("please put \"m\" (motherboard) or \"p\" (processor)");
+                            }
+                        }
+                        else
+                        {
+                            codeg::ConsoleErrorWrite("usage: read mem [\"m\"/\"p\"] [slot] [address]");
+                        }
+                    }
+                    else
+                    {
+                        codeg::ConsoleErrorWrite("usage: read [\"pc\"/\"mem\"] ...");
+                    }
+                }
+            }
+            else
+            {
+                codeg::ConsoleInfoWrite("unknown command or exit!");
+            }
+        }
+        while (userCommand != "exit");
     }
     catch (const codeg::Error& e)
     {
