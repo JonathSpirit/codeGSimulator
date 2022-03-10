@@ -36,7 +36,7 @@ public:
         //STAT_RAMWRITE_OR_END
     };
 
-    GP8B_5_1() = default;
+    GP8B_5_1();
     ~GP8B_5_1() override = default;
 
     void clock() override;
@@ -46,9 +46,13 @@ public:
 
 private:
     void executeInstruction();
+    void computeArgument();
 
     Stat g_stat{STAT_SYNC_BIT};
     uint8_t g_instruction{0};
+    uint8_t g_arguments{0};
+
+    uint16_t g_ramAddress{0};
 };
 
 }//end codeg
