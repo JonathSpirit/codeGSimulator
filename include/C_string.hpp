@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright 2021 Guillaume Guillet                                            //
+// Copyright 2022 Guillaume Guillet                                            //
 //                                                                             //
 // Licensed under the Apache License, Version 2.0 (the "License");             //
 // you may not use this file except in compliance with the License.            //
@@ -24,7 +24,7 @@ namespace codeg
 {
 
 std::string CleanString(const std::string& str);
-size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter);
+std::size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter);
 
 std::string ValueToHex(uint32_t val, unsigned int hexSize=8, bool removeExtraZero=false, bool removePrefix=false);
 

@@ -44,6 +44,8 @@ public:
     void softReset() override;
     void hardReset() override;
 
+    bool isSync() const override;
+
 private:
     void executeInstruction();
     void computeArgument();

@@ -64,9 +64,21 @@ public:
     ~ProcessorSPS1() override = default;
 
     virtual void clock() = 0;
+    bool clockUntilSync(std::size_t maxIteration)
+    {
+        do
+        {
+            this->clock();
+        }
+        while ((maxIteration--) && !this->isSync());
+
+        return maxIteration > 0;
+    }
 
     virtual void softReset() = 0;
     virtual void hardReset() = 0;
+
+    virtual bool isSync() const = 0;
 
     codeg::BusMap _busses;
     codeg::SignalMap _signals;

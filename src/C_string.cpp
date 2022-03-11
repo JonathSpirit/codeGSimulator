@@ -46,13 +46,13 @@ std::string CleanString(const std::string& str)
 
     return result;
 }
-size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter)
+std::size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter)
 {
     std::string buffStr;
     std::istringstream strStream(str);
     while (std::getline(strStream, buffStr, delimiter))
     {
-        buff.push_back(buffStr);
+        buff.emplace_back( std::move(buffStr) );
     }
     return buff.size();
 }
@@ -68,7 +68,7 @@ std::string ValueToHex(uint32_t val, unsigned int hexSize, bool removeExtraZero,
         hexSize = 8;
     }
 
-    char buff[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+    const char buff[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
     std::string out = removePrefix ? "" : "0x";
 
     bool extraZeroFlag = removeExtraZero;

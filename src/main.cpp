@@ -294,6 +294,27 @@ int main(int argc, char **argv)
                         codeg::ConsoleErrorWrite(fileLogOut, "usage: read [\"pc\"/\"mem\"] ...");
                     }
                 }
+                else if (splitedUserCommand[0] == "execute")
+                {
+                    if (splitedUserCommand.size() == 2)
+                    {
+                        std::size_t clockCycle = std::strtoul(splitedUserCommand[1].c_str(), nullptr, 0);
+
+                        for (std::size_t i=0; i<clockCycle; ++i)
+                        {
+                            if ( !motherboard._processor.clockUntilSync(20) )
+                            {
+                                codeg::ConsoleErrorWrite(fileLogOut, "max iteration reached !");
+                                break;
+                            }
+                        }
+                        codeg::ConsoleInfoWrite(fileLogOut, "ok or error");
+                    }
+                    else
+                    {
+                        codeg::ConsoleErrorWrite(fileLogOut, "usage: execute [clock cycle]");
+                    }
+                }
             }
             else
             {

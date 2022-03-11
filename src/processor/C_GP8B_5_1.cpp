@@ -63,6 +63,11 @@ void GP8B_5_1::hardReset()
     this->g_stat = STAT_SYNC_BIT;
 }
 
+bool GP8B_5_1::isSync() const
+{
+    return this->g_stat == STAT_SYNC_BIT;
+}
+
 void GP8B_5_1::executeInstruction()
 {
     switch( static_cast<codeg::CodegBinaryRev1>(this->g_instruction&CG_CODEGBINARYREV1_OPCODE_MASK) )
