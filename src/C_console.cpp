@@ -21,21 +21,15 @@
 #include <fstream>
 
 #ifdef _WIN32
-#include <windows.h>
+    #include <windows.h>
 
-#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
-#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
-#endif
+    #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+        #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+    #endif
 #endif
 
 namespace codeg
 {
-namespace
-{
-
-std::ofstream _logFile;
-
-}//end
 
 int ConsoleInit()
 {
@@ -65,91 +59,80 @@ int ConsoleInit()
     return 0;
 }
 
-bool LogOpen(const std::filesystem::path& path)
+bool LogOpen(const std::filesystem::path& path, std::ofstream& file)
 {
-    if ( _logFile.is_open() )
+    if ( file.is_open() )
     {
         return false;
     }
 
-    _logFile.open(path, std::ofstream::ate);
-    if ( _logFile )
+    file.open(path, std::ofstream::ate);
+    if ( file )
     {
         return true;
     }
 
-    _logFile.close();
+    file.close();
     return false;
 }
-void LogClose()
-{
-    _logFile.close();
-}
 
-void ConsoleWrite(const std::string& str)
-{
-    std::cout << str << std::endl;
-    if ( _logFile.is_open() )
-    {
-        _logFile << str << std::endl;
-    }
-}
-
-void ConsoleFatalWrite(const std::string& str)
+void ConsoleWrite(std::ostream& log, codeg::ConsoleOutputType type, const char* str)
 {
     std::time_t t = std::time(nullptr);
-    std::cout << "\x1b[31m";
-    std::cout << "[fatal](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
-    std::cout << "\x1b[0m";
-    if ( _logFile.is_open() )
-    {
-        _logFile << "[fatal](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
-    }
-}
+    auto tData = std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S");
 
-void ConsoleErrorWrite(const std::string& str)
-{
-    std::time_t t = std::time(nullptr);
-    std::cout << "\x1b[31m";
-    std::cout << "[error](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
-    std::cout << "\x1b[0m";
-    if ( _logFile.is_open() )
+    switch (type)
     {
-        _logFile << "[error](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
-    }
-}
-
-void ConsoleWarningWrite(const std::string& str)
-{
-    std::time_t t = std::time(nullptr);
-    std::cout << "\x1b[36m";
-    std::cout << "[warning](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
-    std::cout << "\x1b[0m";
-    if ( _logFile.is_open() )
-    {
-        _logFile << "[warning](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
-    }
-}
-
-void ConsoleInfoWrite(const std::string& str)
-{
-    std::time_t t = std::time(nullptr);
-    std::cout << "[info](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
-    if ( _logFile.is_open() )
-    {
-        _logFile << "[info](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
-    }
-}
-
-void ConsoleSyntaxWrite(const std::string& str)
-{
-    std::time_t t = std::time(nullptr);
-    std::cout << "\x1b[33m";
-    std::cout << "[syntax error](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
-    std::cout << "\x1b[0m";
-    if ( _logFile.is_open() )
-    {
-        _logFile << "[syntax error](" << std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S") << ") " << str << std::endl;
+    case CONSOLE_TYPE_INFO:
+        std::cout << "[info](" << tData << ") " << str << std::endl;
+        if (log)
+        {
+            log << "[info](" << tData << ") " << str << std::endl;
+        }
+        break;
+    case CONSOLE_TYPE_ERROR:
+        std::cout << "\x1b[31m";
+        std::cout << "[error](" << tData << ") " << str << std::endl;
+        std::cout << "\x1b[0m";
+        if (log)
+        {
+            log << "[error](" << tData << ") " << str << std::endl;
+        }
+        break;
+    case CONSOLE_TYPE_FATAL:
+        std::cout << "\x1b[31m";
+        std::cout << "[fatal](" << tData << ") " << str << std::endl;
+        std::cout << "\x1b[0m";
+        if (log)
+        {
+            log << "[error](" << tData << ") " << str << std::endl;
+        }
+        break;
+    case CONSOLE_TYPE_WARNING:
+        std::cout << "\x1b[36m";
+        std::cout << "[warning](" << tData << ") " << str << std::endl;
+        std::cout << "\x1b[0m";
+        if (log)
+        {
+            log << "[warning](" << tData << ") " << str << std::endl;
+        }
+        break;
+    case CONSOLE_TYPE_SYNTAX:
+        std::cout << "\x1b[33m";
+        std::cout << "[syntax error](" << tData << ") " << str << std::endl;
+        std::cout << "\x1b[0m";
+        if (log)
+        {
+            log << "[syntax error](" << tData << ") " << str << std::endl;
+        }
+        break;
+    default:
+        std::cout << str << '\n' << "\x1b[0m" << std::flush;
+        if (log)
+        {
+            log << str << std::endl;
+        }
+        break;
     }
 }
 
