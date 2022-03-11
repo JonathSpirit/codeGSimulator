@@ -76,11 +76,17 @@ void GCM_5_1_SPS1::signal_PERIPHERAL_CLK([[maybe_unused]] bool val)
 }
 void GCM_5_1_SPS1::signal_SELECTING_RBEXT1([[maybe_unused]] bool val)
 {
-
+    if (val)
+    {
+        this->_processor._busses.get(CG_PROC_SPS1_BUS_NUMBER) = this->_processor._busses.get(CG_PROC_SPS1_BUS_BWRITE1);
+    }
 }
 void GCM_5_1_SPS1::signal_SELECTING_RBEXT2([[maybe_unused]] bool val)
 {
-
+    if (val)
+    {
+        this->_processor._busses.get(CG_PROC_SPS1_BUS_NUMBER) = this->_processor._busses.get(CG_PROC_SPS1_BUS_BWRITE2);
+    }
 }
 
 }//end codeg

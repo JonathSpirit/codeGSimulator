@@ -43,10 +43,13 @@ void GP8B_5_1::clock()
     case STAT_EXECUTION:
         this->executeInstruction();
 
-        if ( static_cast<codeg::CodegBinaryRev1Busses>(this->g_instruction&CG_CODEGBINARYREV1_BUSSES_MASK) == codeg::CodegBinaryRev1Busses::READABLE_SOURCE)
-        {//There is no argument if the selected bus is not source !
-            this->_signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).call(true);
-            this->_signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).call(false);
+        if ( static_cast<codeg::CodegBinaryRev1>(this->g_instruction&CG_CODEGBINARYREV1_OPCODE_MASK) != codeg::CodegBinaryRev1::OPCODE_JMPSRC_CLK )
+        {//The jump instruction inhibit a clock to the next address
+            if ( static_cast<codeg::CodegBinaryRev1Busses>(this->g_instruction&CG_CODEGBINARYREV1_BUSSES_MASK) == codeg::CodegBinaryRev1Busses::READABLE_SOURCE)
+            {//There is no argument if the selected bus is not source !
+                this->_signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).call(true);
+                this->_signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).call(false);
+            }
         }
 
         this->g_stat = STAT_SYNC_BIT;

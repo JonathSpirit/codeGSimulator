@@ -18,8 +18,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <stack>
 #include <vector>
 #include <string>
 #include <limits>
@@ -174,10 +172,11 @@ int main(int argc, char **argv)
         motherboard.memoryPlug(motherboard.getMemorySourceIndex(), memory);
 
         motherboard._processor._alu = std::make_shared<codeg::Aluminium_1_1>();
+        motherboard._processor.memoryPlug(0, std::make_shared<codeg::MM1_16k>());
 
         codeg::ConsoleInfoWrite(fileLogOut, "ok !");
 
-        codeg::ConsoleInfoWrite(fileLogOut, "Waiting user input, ");
+        codeg::ConsoleInfoWrite(fileLogOut, "Waiting user input");
 
         std::string userCommand;
         do
@@ -195,7 +194,18 @@ int main(int argc, char **argv)
             {
                 std::cout << "\texit -> exit the application\n"
                           << "\tread pc -> read the program counter\n"
-                          << "\tread mem [\"m\"/\"p\"] [slot] [address] -> read in a motherboard/processor memory slot at address\n";
+                          << "\tread mem [\"m\"/\"p\"] [slot] [address] -> read in a motherboard/processor memory slot at address\n"
+                          << "\tread bus [name] -> read a specific bus value\n"
+                          << "\tread bus -> read all bus value\n"
+                          << "\texecute [cycle] -> execute a number of clock cycle (clock until sync)\n"
+                          << "\tgoto [address] -> execute a number of clock cycle (clock until sync) until the address is reached (or max iterations)\n"
+                          << "\treset -> do a hard reset\n";
+            }
+            else if (userCommand == "reset")
+            {
+                motherboard.hardReset();
+                codeg::ConsoleInfoWrite(fileLogOut, "pc: % (%)", motherboard.getProgramCounter(),
+                                        codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
             }
             else if (splitedUserCommand.size() > 1)
             {
@@ -289,9 +299,41 @@ int main(int argc, char **argv)
                             codeg::ConsoleErrorWrite(fileLogOut, "usage: read mem [\"m\"/\"p\"] [slot] [address]");
                         }
                     }
+                    else if (splitedUserCommand[1] == "bus")
+                    {
+                        if (splitedUserCommand.size() == 3)
+                        {
+                            if ( motherboard._processor._busses.exist(splitedUserCommand[2]) )
+                            {
+                                const codeg::Bus& bus = motherboard._processor._busses.get(splitedUserCommand[2]);
+                                codeg::ConsoleInfoWrite(fileLogOut, "[%] = % (%)",
+                                                        splitedUserCommand[2],
+                                                        bus.get(),
+                                                        codeg::ValueToHex(bus.get(), 8, true));
+                            }
+                            else
+                            {
+                                codeg::ConsoleErrorWrite(fileLogOut, "bus [%] doesn't exist", splitedUserCommand[2]);
+                            }
+                        }
+                        else if (splitedUserCommand.size() == 2)
+                        {
+                            for (const auto& bus : motherboard._processor._busses)
+                            {
+                                codeg::ConsoleInfoWrite(fileLogOut, "[%] = % (%)",
+                                                        bus.first,
+                                                        bus.second.get(),
+                                                        codeg::ValueToHex(bus.second.get(), 8, true));
+                            }
+                        }
+                        else
+                        {
+                            codeg::ConsoleErrorWrite(fileLogOut, "usage: read bus ([name])");
+                        }
+                    }
                     else
                     {
-                        codeg::ConsoleErrorWrite(fileLogOut, "usage: read [\"pc\"/\"mem\"] ...");
+                        codeg::ConsoleErrorWrite(fileLogOut, "usage: read [\"pc\"/\"mem\"/\"bus\"] ...");
                     }
                 }
                 else if (splitedUserCommand[0] == "execute")
@@ -308,11 +350,46 @@ int main(int argc, char **argv)
                                 break;
                             }
                         }
-                        codeg::ConsoleInfoWrite(fileLogOut, "ok or error");
+                        codeg::ConsoleInfoWrite(fileLogOut, "pc: % (%)", motherboard.getProgramCounter(),
+                                                codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
                     }
                     else
                     {
                         codeg::ConsoleErrorWrite(fileLogOut, "usage: execute [clock cycle]");
+                    }
+                }
+                else if (splitedUserCommand[0] == "goto")
+                {
+                    if (splitedUserCommand.size() == 2)
+                    {
+                        codeg::MemoryAddress memoryAddress = std::strtoul(splitedUserCommand[1].c_str(), nullptr, 0);
+                        bool reached = false;
+
+                        for (std::size_t i=0; i<5000; ++i)
+                        {
+                            if (motherboard.getProgramCounter() == memoryAddress)
+                            {
+                                codeg::ConsoleInfoWrite(fileLogOut, "memory reached !");
+                                reached = true;
+                                break;
+                            }
+
+                            if ( !motherboard._processor.clockUntilSync(20) )
+                            {
+                                codeg::ConsoleErrorWrite(fileLogOut, "clock cycle: max iteration reached !");
+                                break;
+                            }
+                        }
+                        if (!reached)
+                        {
+                            codeg::ConsoleErrorWrite(fileLogOut, "max iteration reached !");
+                            codeg::ConsoleInfoWrite(fileLogOut, "pc: % (%)", motherboard.getProgramCounter(),
+                                                    codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
+                        }
+                    }
+                    else
+                    {
+                        codeg::ConsoleErrorWrite(fileLogOut, "usage: goto [address]");
                     }
                 }
             }

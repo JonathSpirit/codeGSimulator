@@ -118,6 +118,15 @@ public:
         throw codeg::Error("Unknown bus : "+key);
     }
 
+    [[nodiscard]] std::map<std::string, codeg::Bus>::const_iterator begin() const
+    {
+        return this->g_data.cbegin();
+    }
+    [[nodiscard]] std::map<std::string, codeg::Bus>::const_iterator end() const
+    {
+        return this->g_data.cend();
+    }
+
 private:
     std::map<std::string, codeg::Bus> g_data;
 };
