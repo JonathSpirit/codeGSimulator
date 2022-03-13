@@ -29,6 +29,7 @@
 #include "memoryModule/C_MM1.hpp"
 #include "motherboard/C_GCM_5_1.hpp"
 #include "processor/C_ALUminium_1_1.hpp"
+#include "peripheral/C_uart.hpp"
 
 #include "CMakeConfig.hpp"
 
@@ -173,6 +174,10 @@ int main(int argc, char **argv)
 
         motherboard._processor._alu = std::make_shared<codeg::Aluminium_1_1>();
         motherboard._processor.memoryPlug(0, std::make_shared<codeg::MM1_16k>());
+
+        std::shared_ptr<codeg::UART_peripheral_card_A_1_1> uartCard = std::make_shared<codeg::UART_peripheral_card_A_1_1>();
+        uartCard->setInputBuffer("testtesttesttesttesttesttesttest");
+        motherboard.peripheralPlug(0, uartCard);
 
         codeg::ConsoleInfoWrite(fileLogOut, "ok !");
 

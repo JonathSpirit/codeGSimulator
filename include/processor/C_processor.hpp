@@ -78,7 +78,7 @@ public:
     virtual void softReset() = 0;
     virtual void hardReset() = 0;
 
-    virtual bool isSync() const = 0;
+    [[nodiscard]] virtual bool isSync() const = 0;
 
     codeg::BusMap _busses;
     codeg::SignalMap _signals;

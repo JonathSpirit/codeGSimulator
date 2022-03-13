@@ -14,42 +14,43 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_MOTHERBOARD_HPP_INCLUDED
-#define C_MOTHERBOARD_HPP_INCLUDED
+#ifndef C_UART_PERIPHERAL_CARD_A_1_1_HPP_INCLUDED
+#define C_UART_PERIPHERAL_CARD_A_1_1_HPP_INCLUDED
 
-#include <cstdint>
-#include "memoryModule/C_memoryModule.hpp"
 #include "peripheral/C_peripheral.hpp"
+#include <string>
+
+#define CG_PERIPHERAL_UART_RST_RX_FLAG_MASK 0x01
+#define CG_PERIPHERAL_UART_RST_TX_FLAG_MASK 0x02
+#define CG_PERIPHERAL_UART_APPLY_TX_DATA_MASK 0x04
+#define CG_PERIPHERAL_UART_TRANSMIT_MASK 0x08
 
 namespace codeg
 {
 
-class Motherboard : public codeg::MemoryModuleSlotCapable, public codeg::PeripheralSlotCapable
+class UART_peripheral_card_A_1_1 : public codeg::Peripheral
 {
-protected:
-    Motherboard() = default;
-    ~Motherboard() override = default;
-
 public:
-    bool setProgramCounter(codeg::MemoryAddress address)
-    {
-        this->_g_programCounter = address;
-        return true;
-    }
-    [[nodiscard]] codeg::MemoryAddress getProgramCounter() const
-    {
-        return this->_g_programCounter;
-    }
+    UART_peripheral_card_A_1_1() = default;
+    ~UART_peripheral_card_A_1_1() override = default;
 
-    virtual void softReset() = 0;
-    virtual void hardReset() = 0;
+    void update(codeg::Motherboard& motherboard, codeg::BusMap& busses, codeg::SignalMap& signals) override;
 
-    virtual uint8_t updateDataSource() = 0;
+    [[nodiscard]] codeg::PeripheralType getType() const override;
 
-protected:
-    codeg::MemoryAddress _g_programCounter{0};
+    [[nodiscard]] const std::string& getInputBuffer() const;
+    void setInputBuffer(std::string input);
+
+private:
+    std::string g_inputBuffer;
+    std::string g_outputBuffer;
+
+    uint8_t g_txData{0};
+
+    bool g_rxFlag{false};
+    bool g_txFlag{false};
 };
 
 }//end codeg
 
-#endif //C_MOTHERBOARD_HPP_INCLUDED
+#endif // C_UART_PERIPHERAL_CARD_A_1_1_HPP_INCLUDED

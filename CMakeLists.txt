@@ -83,6 +83,8 @@ target_sources(${PROJECT_NAME} PUBLIC "src/C_string.cpp")
 
 target_sources(${PROJECT_NAME} PUBLIC "src/memoryModule/C_MM1.cpp")
 
+target_sources(${PROJECT_NAME} PUBLIC "src/peripheral/C_uart.cpp")
+
 target_sources(${PROJECT_NAME} PUBLIC "src/motherboard/C_GCM_5_1.cpp")
 
 target_sources(${PROJECT_NAME} PUBLIC "src/processor/C_GP8B_5_1.cpp")
@@ -98,6 +100,9 @@ target_sources(${PROJECT_NAME} PUBLIC "include/C_codeg.hpp")
 
 target_sources(${PROJECT_NAME} PUBLIC "include/memoryModule/C_memoryModule.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/memoryModule/C_MM1.hpp")
+
+target_sources(${PROJECT_NAME} PUBLIC "include/peripheral/C_peripheral.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/peripheral/C_uart.hpp")
 
 target_sources(${PROJECT_NAME} PUBLIC "include/motherboard/C_motherboard.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/motherboard/C_GCM_5_1.hpp")

@@ -21,6 +21,11 @@ namespace codeg
 
 GCM_5_1_SPS1::GCM_5_1_SPS1()
 {
+    this->_g_peripheralSlots.push_back( {nullptr, codeg::PeripheralType::TYPE_PP1, true} );
+    this->_g_peripheralSlots.push_back( {nullptr, codeg::PeripheralType::TYPE_PP1, true} );
+    this->_g_peripheralSlots.push_back( {nullptr, codeg::PeripheralType::TYPE_PP1, true} );
+    this->_g_peripheralSlots.push_back( {nullptr, codeg::PeripheralType::TYPE_PP1, true} );
+
     this->_g_memorySlots.push_back( {nullptr, codeg::MemoryModuleType::TYPE_MM1, 3, true, true} );
     this->_g_memorySlots.push_back( {nullptr, codeg::MemoryModuleType::TYPE_MM1, 3, true, true} );
 
@@ -72,7 +77,10 @@ void GCM_5_1_SPS1::signal_JMPSRC_CLK(bool val)
 }
 void GCM_5_1_SPS1::signal_PERIPHERAL_CLK([[maybe_unused]] bool val)
 {
-
+    if (val)
+    {
+        this->peripheralUpdateAll(this->_processor._busses.get(CG_PROC_SPS1_BUS_BPCS).get(), *this, this->_processor._busses, this->_processor._signals);
+    }
 }
 void GCM_5_1_SPS1::signal_SELECTING_RBEXT1([[maybe_unused]] bool val)
 {
