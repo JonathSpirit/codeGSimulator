@@ -31,6 +31,8 @@
 namespace codeg
 {
 
+std::ofstream _fileLog;
+
 int ConsoleInit()
 {
     #ifdef _WIN32
@@ -59,24 +61,28 @@ int ConsoleInit()
     return 0;
 }
 
-bool LogOpen(const std::filesystem::path& path, std::ofstream& file)
+bool LogOpen(const std::filesystem::path& path)
 {
-    if ( file.is_open() )
+    if ( _fileLog.is_open() )
     {
         return false;
     }
 
-    file.open(path, std::ofstream::ate);
-    if ( file )
+    _fileLog.open(path, std::ofstream::ate);
+    if ( _fileLog )
     {
         return true;
     }
 
-    file.close();
+    _fileLog.close();
     return false;
 }
+void LogClose()
+{
+    _fileLog.close();
+}
 
-void ConsoleWrite(std::ostream& log, codeg::ConsoleOutputType type, const char* str)
+void ConsoleWrite(codeg::ConsoleOutputType type, const char* str)
 {
     std::time_t t = std::time(nullptr);
     auto tData = std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S");
@@ -85,52 +91,52 @@ void ConsoleWrite(std::ostream& log, codeg::ConsoleOutputType type, const char* 
     {
     case CONSOLE_TYPE_INFO:
         std::cout << "[info](" << tData << ") " << str << std::endl;
-        if (log)
+        if (_fileLog)
         {
-            log << "[info](" << tData << ") " << str << std::endl;
+            _fileLog << "[info](" << tData << ") " << str << std::endl;
         }
         break;
     case CONSOLE_TYPE_ERROR:
         std::cout << "\x1b[31m";
         std::cout << "[error](" << tData << ") " << str << std::endl;
         std::cout << "\x1b[0m";
-        if (log)
+        if (_fileLog)
         {
-            log << "[error](" << tData << ") " << str << std::endl;
+            _fileLog << "[error](" << tData << ") " << str << std::endl;
         }
         break;
     case CONSOLE_TYPE_FATAL:
         std::cout << "\x1b[31m";
         std::cout << "[fatal](" << tData << ") " << str << std::endl;
         std::cout << "\x1b[0m";
-        if (log)
+        if (_fileLog)
         {
-            log << "[error](" << tData << ") " << str << std::endl;
+            _fileLog << "[error](" << tData << ") " << str << std::endl;
         }
         break;
     case CONSOLE_TYPE_WARNING:
         std::cout << "\x1b[36m";
         std::cout << "[warning](" << tData << ") " << str << std::endl;
         std::cout << "\x1b[0m";
-        if (log)
+        if (_fileLog)
         {
-            log << "[warning](" << tData << ") " << str << std::endl;
+            _fileLog << "[warning](" << tData << ") " << str << std::endl;
         }
         break;
     case CONSOLE_TYPE_SYNTAX:
         std::cout << "\x1b[33m";
         std::cout << "[syntax error](" << tData << ") " << str << std::endl;
         std::cout << "\x1b[0m";
-        if (log)
+        if (_fileLog)
         {
-            log << "[syntax error](" << tData << ") " << str << std::endl;
+            _fileLog << "[syntax error](" << tData << ") " << str << std::endl;
         }
         break;
     default:
         std::cout << str << '\n' << "\x1b[0m" << std::flush;
-        if (log)
+        if (_fileLog)
         {
-            log << str << std::endl;
+            _fileLog << str << std::endl;
         }
         break;
     }

@@ -140,10 +140,9 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    std::ofstream fileLogOut;
     if (writeLogFile)
     {
-        if ( !codeg::LogOpen(fileLogOutPath, fileLogOut) )
+        if ( !codeg::LogOpen(fileLogOutPath) )
         {
             std::cout << "Can't write the file " << fileLogOutPath << std::endl;
             return -1;
@@ -156,19 +155,19 @@ int main(int argc, char **argv)
 
     try
     {
-        codeg::ConsoleInfoWrite(fileLogOut, "Reading the file ...");
+        codeg::ConsoleInfoWrite("Reading the file ...");
 
         auto* buffer = new uint8_t[0xFFFF];
         auto finalSize = fileIn.readsome(reinterpret_cast<char*>(buffer), 0xFFFF);
 
-        codeg::ConsoleInfoWrite(fileLogOut, "Data size : % bytes", finalSize);
+        codeg::ConsoleInfoWrite("Data size : % bytes", finalSize);
 
-        codeg::ConsoleInfoWrite(fileLogOut, "Creating memory module size for the source ...");
+        codeg::ConsoleInfoWrite("Creating memory module size for the source ...");
         std::shared_ptr<codeg::MemoryModule> memory = std::make_shared<codeg::MM1_64k>();
         memory->set(0, buffer, finalSize);
         delete[] buffer;
 
-        codeg::ConsoleInfoWrite(fileLogOut, "Creating the motherboard and plug the memory module ...");
+        codeg::ConsoleInfoWrite("Creating the motherboard and plug the memory module ...");
         codeg::GCM_5_1_SPS1 motherboard;
         motherboard.memoryPlug(motherboard.getMemorySourceIndex(), memory);
 
@@ -180,9 +179,9 @@ int main(int argc, char **argv)
         uartCard->setInputBuffer("test_hello\n");
         motherboard.peripheralPlug(0, uartCard);
 
-        codeg::ConsoleInfoWrite(fileLogOut, "ok !");
+        codeg::ConsoleInfoWrite("ok !");
 
-        codeg::ConsoleInfoWrite(fileLogOut, "Waiting user input");
+        codeg::ConsoleInfoWrite("Waiting user input");
 
         std::string userCommand;
         do
@@ -194,7 +193,7 @@ int main(int argc, char **argv)
             std::vector<std::string> splitedUserCommand;
             codeg::Split(userCommand, splitedUserCommand, ' ');
 
-            codeg::ConsoleInfoWrite(fileLogOut, "user command : \"%\"", userCommand);
+            codeg::ConsoleInfoWrite("user command : \"%\"", userCommand);
 
             if (userCommand == "help")
             {
@@ -211,18 +210,18 @@ int main(int argc, char **argv)
             else if (userCommand == "reset")
             {
                 motherboard.hardReset();
-                codeg::ConsoleInfoWrite(fileLogOut, "pc: % (%)", motherboard.getProgramCounter(),
+                codeg::ConsoleInfoWrite("pc: % (%)", motherboard.getProgramCounter(),
                                         codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
             }
             else if (userCommand == "flushUart")
             {
                 if (uartCard->getOutputBuffer().empty())
                 {
-                    codeg::ConsoleWarningWrite(fileLogOut, "buffer is empty");
+                    codeg::ConsoleWarningWrite("buffer is empty");
                 }
                 else
                 {
-                    codeg::ConsoleInfoWrite(fileLogOut, "buffer: %", uartCard->getOutputBuffer());
+                    codeg::ConsoleInfoWrite("buffer: %", uartCard->getOutputBuffer());
                     uartCard->clearOutputBuffer();
                 }
             }
@@ -234,12 +233,12 @@ int main(int argc, char **argv)
                     {
                         if (splitedUserCommand.size() == 2)
                         {
-                            codeg::ConsoleInfoWrite(fileLogOut, "% (%)", motherboard.getProgramCounter(),
+                            codeg::ConsoleInfoWrite("% (%)", motherboard.getProgramCounter(),
                                                     codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
                         }
                         else
                         {
-                            codeg::ConsoleErrorWrite(fileLogOut, "usage: read pc");
+                            codeg::ConsoleErrorWrite("usage: read pc");
                         }
                     }
                     else if (splitedUserCommand[1] == "mem")
@@ -260,21 +259,21 @@ int main(int argc, char **argv)
                                         uint8_t data;
                                         if ( slot->_mem->get(addressValue, data) )
                                         {
-                                            codeg::ConsoleInfoWrite(fileLogOut, "%", codeg::ValueToHex(data, 2));
+                                            codeg::ConsoleInfoWrite("%", codeg::ValueToHex(data, 2));
                                         }
                                         else
                                         {
-                                            codeg::ConsoleErrorWrite(fileLogOut, "address out of range (max: %)", slot->_mem->getMemorySize());
+                                            codeg::ConsoleErrorWrite("address out of range (max: %)", slot->_mem->getMemorySize());
                                         }
                                     }
                                     else
                                     {
-                                        codeg::ConsoleErrorWrite(fileLogOut, "no memory plugged in this slot");
+                                        codeg::ConsoleErrorWrite("no memory plugged in this slot");
                                     }
                                 }
                                 else
                                 {
-                                    codeg::ConsoleErrorWrite(fileLogOut, "unknown slot %", splitedUserCommand[3]);
+                                    codeg::ConsoleErrorWrite("unknown slot %", splitedUserCommand[3]);
                                 }
                             }
                             else if (splitedUserCommand[2] == "p")
@@ -291,31 +290,31 @@ int main(int argc, char **argv)
                                         uint8_t data;
                                         if ( slot->_mem->get(addressValue, data) )
                                         {
-                                            codeg::ConsoleInfoWrite(fileLogOut, "%", codeg::ValueToHex(data, 2));
+                                            codeg::ConsoleInfoWrite("%", codeg::ValueToHex(data, 2));
                                         }
                                         else
                                         {
-                                            codeg::ConsoleErrorWrite(fileLogOut,"address out of range (max: %)", slot->_mem->getMemorySize());
+                                            codeg::ConsoleErrorWrite("address out of range (max: %)", slot->_mem->getMemorySize());
                                         }
                                     }
                                     else
                                     {
-                                        codeg::ConsoleErrorWrite(fileLogOut,"no memory plugged in this slot");
+                                        codeg::ConsoleErrorWrite("no memory plugged in this slot");
                                     }
                                 }
                                 else
                                 {
-                                    codeg::ConsoleErrorWrite(fileLogOut, "unknown slot %", splitedUserCommand[3]);
+                                    codeg::ConsoleErrorWrite("unknown slot %", splitedUserCommand[3]);
                                 }
                             }
                             else
                             {
-                                codeg::ConsoleErrorWrite(fileLogOut, "please put \"m\" (motherboard) or \"p\" (processor)");
+                                codeg::ConsoleErrorWrite("please put \"m\" (motherboard) or \"p\" (processor)");
                             }
                         }
                         else
                         {
-                            codeg::ConsoleErrorWrite(fileLogOut, "usage: read mem [\"m\"/\"p\"] [slot] [address]");
+                            codeg::ConsoleErrorWrite("usage: read mem [\"m\"/\"p\"] [slot] [address]");
                         }
                     }
                     else if (splitedUserCommand[1] == "bus")
@@ -325,21 +324,21 @@ int main(int argc, char **argv)
                             if ( motherboard._processor._busses.exist(splitedUserCommand[2]) )
                             {
                                 const codeg::Bus& bus = motherboard._processor._busses.get(splitedUserCommand[2]);
-                                codeg::ConsoleInfoWrite(fileLogOut, "[%] = % (%)",
+                                codeg::ConsoleInfoWrite("[%] = % (%)",
                                                         splitedUserCommand[2],
                                                         bus.get(),
                                                         codeg::ValueToHex(bus.get(), 8, true));
                             }
                             else
                             {
-                                codeg::ConsoleErrorWrite(fileLogOut, "bus [%] doesn't exist", splitedUserCommand[2]);
+                                codeg::ConsoleErrorWrite("bus [%] doesn't exist", splitedUserCommand[2]);
                             }
                         }
                         else if (splitedUserCommand.size() == 2)
                         {
                             for (const auto& bus : motherboard._processor._busses)
                             {
-                                codeg::ConsoleInfoWrite(fileLogOut, "[%] = % (%)",
+                                codeg::ConsoleInfoWrite("[%] = % (%)",
                                                         bus.first,
                                                         bus.second.get(),
                                                         codeg::ValueToHex(bus.second.get(), 8, true));
@@ -347,12 +346,12 @@ int main(int argc, char **argv)
                         }
                         else
                         {
-                            codeg::ConsoleErrorWrite(fileLogOut, "usage: read bus ([name])");
+                            codeg::ConsoleErrorWrite("usage: read bus ([name])");
                         }
                     }
                     else
                     {
-                        codeg::ConsoleErrorWrite(fileLogOut, "usage: read [\"pc\"/\"mem\"/\"bus\"] ...");
+                        codeg::ConsoleErrorWrite("usage: read [\"pc\"/\"mem\"/\"bus\"] ...");
                     }
                 }
                 else if (splitedUserCommand[0] == "execute")
@@ -365,16 +364,16 @@ int main(int argc, char **argv)
                         {
                             if ( !motherboard._processor.clockUntilSync(20) )
                             {
-                                codeg::ConsoleErrorWrite(fileLogOut, "max iteration reached !");
+                                codeg::ConsoleErrorWrite("max iteration reached !");
                                 break;
                             }
                         }
-                        codeg::ConsoleInfoWrite(fileLogOut, "pc: % (%)", motherboard.getProgramCounter(),
+                        codeg::ConsoleInfoWrite("pc: % (%)", motherboard.getProgramCounter(),
                                                 codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
                     }
                     else
                     {
-                        codeg::ConsoleErrorWrite(fileLogOut, "usage: execute [clock cycle]");
+                        codeg::ConsoleErrorWrite("usage: execute [clock cycle]");
                     }
                 }
                 else if (splitedUserCommand[0] == "goto")
@@ -388,49 +387,49 @@ int main(int argc, char **argv)
                         {
                             if (motherboard.getProgramCounter() == memoryAddress)
                             {
-                                codeg::ConsoleInfoWrite(fileLogOut, "memory reached !");
+                                codeg::ConsoleInfoWrite("memory reached !");
                                 reached = true;
                                 break;
                             }
 
                             if ( !motherboard._processor.clockUntilSync(20) )
                             {
-                                codeg::ConsoleErrorWrite(fileLogOut, "clock cycle: max iteration reached !");
+                                codeg::ConsoleErrorWrite("clock cycle: max iteration reached !");
                                 break;
                             }
                         }
                         if (!reached)
                         {
-                            codeg::ConsoleErrorWrite(fileLogOut, "max iteration reached !");
-                            codeg::ConsoleInfoWrite(fileLogOut, "pc: % (%)", motherboard.getProgramCounter(),
+                            codeg::ConsoleErrorWrite("max iteration reached !");
+                            codeg::ConsoleInfoWrite("pc: % (%)", motherboard.getProgramCounter(),
                                                     codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
                         }
                     }
                     else
                     {
-                        codeg::ConsoleErrorWrite(fileLogOut, "usage: goto [address]");
+                        codeg::ConsoleErrorWrite("usage: goto [address]");
                     }
                 }
             }
             else
             {
-                codeg::ConsoleWarningWrite(fileLogOut, "unknown command or exit!");
+                codeg::ConsoleWarningWrite("unknown command or exit!");
             }
         }
         while (userCommand != "exit");
     }
     catch (const codeg::Error& e)
     {
-        codeg::ConsoleErrorWrite(fileLogOut, "error : %", e.what());
+        codeg::ConsoleErrorWrite("error : %", e.what());
         return -1;
     }
     catch (const std::exception& e)
     {
-        codeg::ConsoleFatalWrite(fileLogOut, "unknown exception : %", e.what());
+        codeg::ConsoleFatalWrite("unknown exception : %", e.what());
         return -1;
     }
 
-    fileLogOut.close();
+    codeg::LogClose();
 
     return 0;
 }

@@ -18,16 +18,19 @@
 #define C_CONSOLE_H_INCLUDED
 
 #include <string>
-#include <ostream>
+#include <fstream>
 #include <iostream>
 #include <filesystem>
 
 namespace codeg
 {
 
+extern std::ofstream _fileLog;
+
 int ConsoleInit();
 
-bool LogOpen(const std::filesystem::path& path, std::ofstream& file);
+bool LogOpen(const std::filesystem::path& path);
+void LogClose();
 
 enum ConsoleOutputType
 {
@@ -40,9 +43,9 @@ enum ConsoleOutputType
     CONSOLE_TYPE_SYNTAX
 };
 
-void ConsoleWrite(std::ostream& log, codeg::ConsoleOutputType type, const char* str);
+void ConsoleWrite(codeg::ConsoleOutputType type, const char* str);
 template<typename T, typename... TArgs>
-void ConsoleWrite(std::ostream& log, codeg::ConsoleOutputType type, const char* str, T value, TArgs... args)
+void ConsoleWrite(codeg::ConsoleOutputType type, const char* str, T value, TArgs... args)
 {
     std::time_t t = std::time(nullptr);
     auto tData = std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S");
@@ -51,41 +54,41 @@ void ConsoleWrite(std::ostream& log, codeg::ConsoleOutputType type, const char* 
     {
     case CONSOLE_TYPE_INFO:
         std::cout << "[info](" << tData << ") ";
-        if (log)
+        if (_fileLog)
         {
-            log << "[info](" << tData << ") ";
+            _fileLog << "[info](" << tData << ") ";
         }
         break;
     case CONSOLE_TYPE_ERROR:
         std::cout << "\x1b[31m";
         std::cout << "[error](" << tData << ") ";
-        if (log)
+        if (_fileLog)
         {
-            log << "[error](" << tData << ") ";
+            _fileLog << "[error](" << tData << ") ";
         }
         break;
     case CONSOLE_TYPE_FATAL:
         std::cout << "\x1b[31m";
         std::cout << "[fatal](" << tData << ") ";
-        if (log)
+        if (_fileLog)
         {
-            log << "[error](" << tData << ") ";
+            _fileLog << "[error](" << tData << ") ";
         }
         break;
     case CONSOLE_TYPE_WARNING:
         std::cout << "\x1b[36m";
         std::cout << "[warning](" << tData << ") ";
-        if (log)
+        if (_fileLog)
         {
-            log << "[warning](" << tData << ") ";
+            _fileLog << "[warning](" << tData << ") ";
         }
         break;
     case CONSOLE_TYPE_SYNTAX:
         std::cout << "\x1b[33m";
         std::cout << "[syntax error](" << tData << ") ";
-        if (log)
+        if (_fileLog)
         {
-            log << "[syntax error](" << tData << ") ";
+            _fileLog << "[syntax error](" << tData << ") ";
         }
         break;
     default:
@@ -97,18 +100,18 @@ void ConsoleWrite(std::ostream& log, codeg::ConsoleOutputType type, const char* 
         if (*str == '%')
         {
             std::cout << value;
-            if (log)
+            if (_fileLog)
             {
-                log << value;
+                _fileLog << value;
             }
 
-            codeg::ConsoleWrite(log, codeg::CONSOLE_TYPE_NONE, str + 1, args...);
+            codeg::ConsoleWrite(codeg::CONSOLE_TYPE_NONE, str + 1, args...);
             return;
         }
         std::cout << *str;
-        if (log)
+        if (_fileLog)
         {
-            log << *str;
+            _fileLog << *str;
         }
 
         ++str;
@@ -117,57 +120,57 @@ void ConsoleWrite(std::ostream& log, codeg::ConsoleOutputType type, const char* 
     std::cout << "\x1b[0m" << std::endl;
 
     std::cout.flush();
-    log.flush();
+    _fileLog.flush();
 }
 
-inline void ConsoleFatalWrite(std::ostream& log, const char* str)
+inline void ConsoleFatalWrite(const char* str)
 {
-    codeg::ConsoleWrite(log, codeg::CONSOLE_TYPE_FATAL, str);
+    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_FATAL, str);
 }
 template<typename T, typename... TArgs>
-inline void ConsoleFatalWrite(std::ostream& log, const char* str, T value, TArgs... args)
+inline void ConsoleFatalWrite(const char* str, T value, TArgs... args)
 {
-    codeg::ConsoleWrite(log, codeg::CONSOLE_TYPE_FATAL, str, value, args...);
+    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_FATAL, str, value, args...);
 }
 
-inline void ConsoleErrorWrite(std::ostream& log, const char* str)
+inline void ConsoleErrorWrite(const char* str)
 {
-    codeg::ConsoleWrite(log, codeg::CONSOLE_TYPE_ERROR, str);
+    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_ERROR, str);
 }
 template<typename T, typename... TArgs>
-inline void ConsoleErrorWrite(std::ostream& log, const char* str, T value, TArgs... args)
+inline void ConsoleErrorWrite(const char* str, T value, TArgs... args)
 {
-    codeg::ConsoleWrite(log, codeg::CONSOLE_TYPE_ERROR, str, value, args...);
+    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_ERROR, str, value, args...);
 }
 
-inline void ConsoleWarningWrite(std::ostream& log, const char* str)
+inline void ConsoleWarningWrite(const char* str)
 {
-    codeg::ConsoleWrite(log, codeg::CONSOLE_TYPE_WARNING, str);
+    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_WARNING, str);
 }
 template<typename T, typename... TArgs>
-inline void ConsoleWarningWrite(std::ostream& log, const char* str, T value, TArgs... args)
+inline void ConsoleWarningWrite(const char* str, T value, TArgs... args)
 {
-    codeg::ConsoleWrite(log, codeg::CONSOLE_TYPE_WARNING, str, value, args...);
+    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_WARNING, str, value, args...);
 }
 
-inline void ConsoleInfoWrite(std::ostream& log, const char* str)
+inline void ConsoleInfoWrite(const char* str)
 {
-    codeg::ConsoleWrite(log, codeg::CONSOLE_TYPE_INFO, str);
+    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_INFO, str);
 }
 template<typename T, typename... TArgs>
-inline void ConsoleInfoWrite(std::ostream& log, const char* str, T value, TArgs... args)
+inline void ConsoleInfoWrite(const char* str, T value, TArgs... args)
 {
-    codeg::ConsoleWrite(log, codeg::CONSOLE_TYPE_INFO, str, value, args...);
+    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_INFO, str, value, args...);
 }
 
-inline void ConsoleSyntaxWrite(std::ostream& log, const char* str)
+inline void ConsoleSyntaxWrite(const char* str)
 {
-    codeg::ConsoleWrite(log, codeg::CONSOLE_TYPE_SYNTAX, str);
+    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_SYNTAX, str);
 }
 template<typename T, typename... TArgs>
-inline void ConsoleSyntaxWrite(std::ostream& log, const char* str, T value, TArgs... args)
+inline void ConsoleSyntaxWrite(const char* str, T value, TArgs... args)
 {
-    codeg::ConsoleWrite(log, codeg::CONSOLE_TYPE_SYNTAX, str, value, args...);
+    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_SYNTAX, str, value, args...);
 }
 
 }//end codeg
