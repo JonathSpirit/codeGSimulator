@@ -41,6 +41,9 @@ public:
     [[nodiscard]] const std::string& getInputBuffer() const;
     void setInputBuffer(std::string input);
 
+    void clearOutputBuffer();
+    const std::string& getOutputBuffer() const;
+
 private:
     std::string g_inputBuffer;
     std::string g_outputBuffer;

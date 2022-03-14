@@ -205,13 +205,26 @@ int main(int argc, char **argv)
                           << "\tread bus -> read all bus value\n"
                           << "\texecute [cycle] -> execute a number of clock cycle (clock until sync)\n"
                           << "\tgoto [address] -> execute a number of clock cycle (clock until sync) until the address is reached (or max iterations)\n"
-                          << "\treset -> do a hard reset\n";
+                          << "\treset -> do a hard reset\n"
+                          << "\tflushUart -> clear the output buffer of the uart card and print the result\n";
             }
             else if (userCommand == "reset")
             {
                 motherboard.hardReset();
                 codeg::ConsoleInfoWrite(fileLogOut, "pc: % (%)", motherboard.getProgramCounter(),
                                         codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
+            }
+            else if (userCommand == "flushUart")
+            {
+                if (uartCard->getOutputBuffer().empty())
+                {
+                    codeg::ConsoleWarningWrite(fileLogOut, "buffer is empty");
+                }
+                else
+                {
+                    codeg::ConsoleInfoWrite(fileLogOut, "buffer: %", uartCard->getOutputBuffer());
+                    uartCard->clearOutputBuffer();
+                }
             }
             else if (splitedUserCommand.size() > 1)
             {

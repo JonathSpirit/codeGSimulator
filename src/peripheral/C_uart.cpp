@@ -99,4 +99,13 @@ void UART_peripheral_card_A_1_1::setInputBuffer(std::string input)
     this->g_rxFlag = !this->g_inputBuffer.empty();
 }
 
+void UART_peripheral_card_A_1_1::clearOutputBuffer()
+{
+    this->g_outputBuffer.clear();
+}
+const std::string& UART_peripheral_card_A_1_1::getOutputBuffer() const
+{
+    return this->g_outputBuffer;
+}
+
 }//end codeg
