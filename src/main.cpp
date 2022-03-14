@@ -221,7 +221,7 @@ int main(int argc, char **argv)
                 }
                 else
                 {
-                    codeg::ConsoleInfoWrite("buffer: %", uartCard->getOutputBuffer());
+                    codeg::ConsoleInfoWrite("buffer: \"%\"", uartCard->getOutputBuffer());
                     uartCard->clearOutputBuffer();
                 }
             }
