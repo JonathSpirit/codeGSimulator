@@ -174,9 +174,10 @@ int main(int argc, char **argv)
 
         motherboard._processor._alu = std::make_shared<codeg::Aluminium_1_1>();
         motherboard._processor.memoryPlug(0, std::make_shared<codeg::MM1_16k>());
+        motherboard.memoryPlug(1, std::make_shared<codeg::MM1_16k>());
 
         std::shared_ptr<codeg::UART_peripheral_card_A_1_1> uartCard = std::make_shared<codeg::UART_peripheral_card_A_1_1>();
-        uartCard->setInputBuffer("testtesttesttesttesttesttesttest");
+        uartCard->setInputBuffer("test_hello\n");
         motherboard.peripheralPlug(0, uartCard);
 
         codeg::ConsoleInfoWrite(fileLogOut, "ok !");

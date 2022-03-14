@@ -19,6 +19,14 @@
 
 #include "motherboard/C_motherboard.hpp"
 #include "processor/C_GP8B_5_1.hpp"
+#include "peripheral/C_peripheral.hpp"
+
+#define CG_PERIPHERAL_MEMORY_CONTROLLER_CE_MASK 0x01
+#define CG_PERIPHERAL_MEMORY_CONTROLLER_WE_MASK 0x02
+#define CG_PERIPHERAL_MEMORY_CONTROLLER_OE_MASK 0x04
+#define CG_PERIPHERAL_MEMORY_CONTROLLER_ADDRESS0_MASK 0x08
+#define CG_PERIPHERAL_MEMORY_CONTROLLER_ADDRESS1_MASK 0x10
+#define CG_PERIPHERAL_MEMORY_CONTROLLER_ADDRESS2_MASK 0x20
 
 namespace codeg
 {
@@ -41,6 +49,24 @@ public:
     void signal_SELECTING_RBEXT2(bool val);
 
     codeg::GP8B_5_1 _processor;
+};
+
+class MemoryController : public codeg::Peripheral
+{
+public:
+    MemoryController() = default;
+    ~MemoryController() override = default;
+
+    void update(codeg::Motherboard& motherboard, codeg::BusMap& busses, codeg::SignalMap& signals) override;
+
+    [[nodiscard]] codeg::PeripheralType getType() const override;
+
+private:
+    bool g_writeFlag{false};
+    bool g_addressClock0Flag{false};
+    bool g_addressClock1Flag{false};
+    bool g_addressClock2Flag{false};
+    uint32_t g_address{0};
 };
 
 }//end codeg

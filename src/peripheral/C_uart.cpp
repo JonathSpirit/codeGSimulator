@@ -38,7 +38,7 @@ void UART_peripheral_card_A_1_1::update([[maybe_unused]] codeg::Motherboard& mot
                 }
                 else
                 {
-                    this->g_inputBuffer.pop_back();
+                    this->g_inputBuffer.erase(0, 1);
                     this->g_rxFlag = !this->g_inputBuffer.empty();
                 }
             }
@@ -77,7 +77,7 @@ void UART_peripheral_card_A_1_1::update([[maybe_unused]] codeg::Motherboard& mot
         }
         else
         {
-            busses.get(CG_PROC_SPS1_BUS_BREAD1).set( this->g_inputBuffer.back() );
+            busses.get(CG_PROC_SPS1_BUS_BREAD1).set( this->g_inputBuffer.front() );
         }
 
         busses.get(CG_PROC_SPS1_BUS_BREAD2).set((this->g_rxFlag ? 0x01 : 0x00) | (this->g_txFlag ? 0x02 : 0x00));

@@ -25,6 +25,7 @@ GCM_5_1_SPS1::GCM_5_1_SPS1()
     this->_g_peripheralSlots.push_back( {nullptr, codeg::PeripheralType::TYPE_PP1, true} );
     this->_g_peripheralSlots.push_back( {nullptr, codeg::PeripheralType::TYPE_PP1, true} );
     this->_g_peripheralSlots.push_back( {nullptr, codeg::PeripheralType::TYPE_PP1, true} );
+    this->_g_peripheralSlots.push_back( {std::make_shared<codeg::MemoryController>(), codeg::PeripheralType::TYPE_HARDWARE, false} );
 
     this->_g_memorySlots.push_back( {nullptr, codeg::MemoryModuleType::TYPE_MM1, 3, true, true} );
     this->_g_memorySlots.push_back( {nullptr, codeg::MemoryModuleType::TYPE_MM1, 3, true, true} );
@@ -73,6 +74,7 @@ void GCM_5_1_SPS1::signal_JMPSRC_CLK(bool val)
     if (val)
     {
         this->setProgramCounter(this->_processor._busses.get(CG_PROC_SPS1_BUS_BJMPSRC).get());
+        this->updateDataSource();
     }
 }
 void GCM_5_1_SPS1::signal_PERIPHERAL_CLK([[maybe_unused]] bool val)
@@ -95,6 +97,108 @@ void GCM_5_1_SPS1::signal_SELECTING_RBEXT2([[maybe_unused]] bool val)
     {
         this->_processor._busses.get(CG_PROC_SPS1_BUS_NUMBER) = this->_processor._busses.get(CG_PROC_SPS1_BUS_BWRITE2);
     }
+}
+
+///MemoryController
+
+void MemoryController::update(codeg::Motherboard& motherboard, codeg::BusMap& busses, codeg::SignalMap& signals)
+{
+    if ( this->isSelected() )
+    {
+        uint8_t bwrite1 = busses.get(CG_PROC_SPS1_BUS_BWRITE1).get();
+        uint8_t bwrite2 = busses.get(CG_PROC_SPS1_BUS_BWRITE2).get();
+
+        if (signals.get(CG_PROC_SPS1_SIGNAL_PERIPHERAL_CLK)._value)
+        {
+            if (bwrite1 & CG_PERIPHERAL_MEMORY_CONTROLLER_ADDRESS0_MASK)
+            {
+                if (!this->g_addressClock0Flag)
+                {
+                    this->g_addressClock0Flag = true;
+                    this->g_address &=~ 0x000000FF;
+                    this->g_address |= static_cast<uint32_t>(bwrite2);
+                }
+            }
+            else
+            {
+                this->g_addressClock0Flag = false;
+            }
+            if (bwrite1 & CG_PERIPHERAL_MEMORY_CONTROLLER_ADDRESS1_MASK)
+            {
+                if (!this->g_addressClock1Flag)
+                {
+                    this->g_addressClock1Flag = true;
+                    this->g_address &=~ 0x0000FF00;
+                    this->g_address |= static_cast<uint32_t>(bwrite2)<<8;
+                }
+            }
+            else
+            {
+                this->g_addressClock1Flag = false;
+            }
+            if (bwrite1 & CG_PERIPHERAL_MEMORY_CONTROLLER_ADDRESS2_MASK)
+            {
+                if (!this->g_addressClock2Flag)
+                {
+                    this->g_addressClock2Flag = true;
+                    this->g_address &=~ 0x00FF0000;
+                    this->g_address |= static_cast<uint32_t>(bwrite2)<<16;
+                }
+            }
+            else
+            {
+                this->g_addressClock2Flag = false;
+            }
+            if (!(bwrite1 & CG_PERIPHERAL_MEMORY_CONTROLLER_WE_MASK))
+            {
+                if (!this->g_writeFlag)
+                {
+                    this->g_writeFlag = true;
+                    if ((bwrite1&CG_PERIPHERAL_MEMORY_CONTROLLER_CE_MASK) &&
+                        (bwrite1&CG_PERIPHERAL_MEMORY_CONTROLLER_OE_MASK) )
+                    {
+                        std::size_t index = 1-motherboard.getMemorySourceIndex();
+                        std::shared_ptr<codeg::MemoryModule> mem = motherboard.getMemorySlot(index)->_mem;
+                        if (mem)
+                        {
+                            mem->set(this->g_address, bwrite2);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                this->g_writeFlag = false;
+            }
+        }
+
+        if ((bwrite1&CG_PERIPHERAL_MEMORY_CONTROLLER_CE_MASK) &&
+            !(bwrite1&CG_PERIPHERAL_MEMORY_CONTROLLER_OE_MASK) )
+        {
+            std::size_t index = 1-motherboard.getMemorySourceIndex();
+            std::shared_ptr<codeg::MemoryModule> mem = motherboard.getMemorySlot(index)->_mem;
+            if (mem)
+            {
+                uint8_t data = 0;
+                mem->get(this->g_address, data);
+
+                busses.get(CG_PROC_SPS1_BUS_BREAD1).set(data);
+            }
+            else
+            {
+                busses.get(CG_PROC_SPS1_BUS_BREAD1).set(0);
+            }
+        }
+        else
+        {
+            busses.get(CG_PROC_SPS1_BUS_BREAD1).set(0);
+        }
+    }
+}
+
+codeg::PeripheralType MemoryController::getType() const
+{
+    return codeg::PeripheralType::TYPE_HARDWARE;
 }
 
 }//end codeg
