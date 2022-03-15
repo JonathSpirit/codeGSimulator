@@ -189,7 +189,7 @@ int main(int argc, char **argv)
             std::cout << ">";
             std::getline(std::cin, userCommand);
 
-            userCommand = codeg::CleanString(userCommand);
+            userCommand = codeg::RemoveExtraSpace(userCommand);
             std::vector<std::string> splitedUserCommand;
             codeg::Split(userCommand, splitedUserCommand, ' ');
 

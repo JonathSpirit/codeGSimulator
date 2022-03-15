@@ -17,6 +17,7 @@
 #include "peripheral/C_uart.hpp"
 #include "processor/C_GP8B_5_1.hpp"
 #include "C_console.hpp"
+#include "C_string.hpp"
 
 namespace codeg
 {
@@ -54,7 +55,7 @@ void UART_peripheral_card_A_1_1::update([[maybe_unused]] codeg::Motherboard& mot
             {
                 if ( static_cast<char>(this->g_txData) == '\n' )
                 {
-                    codeg::ConsoleInfoWrite("uart: receiving \"%\"", this->g_outputBuffer);
+                    codeg::ConsoleInfoWrite("uart: receiving \"%\"", codeg::ReplaceNonPrintableAsciiChar(this->g_outputBuffer));
                     this->g_outputBuffer.clear();
                 }
                 else
@@ -62,7 +63,7 @@ void UART_peripheral_card_A_1_1::update([[maybe_unused]] codeg::Motherboard& mot
                     this->g_outputBuffer.push_back( static_cast<char>(this->g_txData) );
                     if (this->g_outputBuffer.size() >= 20)
                     {
-                        codeg::ConsoleInfoWrite("uart: (overflow) receiving \"%\"", this->g_outputBuffer);
+                        codeg::ConsoleInfoWrite("uart: (overflow) receiving \"%\"", codeg::ReplaceNonPrintableAsciiChar(this->g_outputBuffer));
                         this->g_outputBuffer.clear();
                     }
                 }

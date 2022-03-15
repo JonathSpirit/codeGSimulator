@@ -23,7 +23,8 @@
 namespace codeg
 {
 
-std::string CleanString(const std::string& str);
+std::string ReplaceNonPrintableAsciiChar(const std::string& str);
+std::string RemoveExtraSpace(const std::string& str);
 std::size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter);
 
 std::string ValueToHex(uint32_t val, unsigned int hexSize=8, bool removeExtraZero=false, bool removePrefix=false);

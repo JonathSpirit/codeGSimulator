@@ -20,7 +20,20 @@
 namespace codeg
 {
 
-std::string CleanString(const std::string& str)
+std::string ReplaceNonPrintableAsciiChar(const std::string& str)
+{
+    std::string result{str};
+
+    for (std::size_t i=0; i<result.size(); ++i)
+    {
+        if ( (result[i] >= 0 && result[i] < 32) || result[i] == 127 )
+        {
+            result[i] = static_cast<char>(168);
+        }
+    }
+    return result;
+}
+std::string RemoveExtraSpace(const std::string& str)
 {
     std::string result;
     bool extraSpace = true;
