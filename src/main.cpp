@@ -140,9 +140,10 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    codeg::varConsole = new codeg::Console();
     if (writeLogFile)
     {
-        if ( !codeg::LogOpen(fileLogOutPath) )
+        if ( !codeg::varConsole->logOpen(fileLogOutPath) )
         {
             std::cout << "Can't write the file " << fileLogOutPath << std::endl;
             return -1;
@@ -155,19 +156,19 @@ int main(int argc, char **argv)
 
     try
     {
-        codeg::ConsoleInfoWrite("Reading the file ...");
+        ConsoleInfo << "Reading the file ..." << std::endl;
 
         auto* buffer = new uint8_t[0xFFFF];
         auto finalSize = fileIn.readsome(reinterpret_cast<char*>(buffer), 0xFFFF);
 
-        codeg::ConsoleInfoWrite("Data size : % bytes", finalSize);
+        ConsoleInfo << "Data size : " << finalSize << " bytes" << std::endl;
 
-        codeg::ConsoleInfoWrite("Creating memory module size for the source ...");
+        ConsoleInfo << "Creating memory module size for the source ..." << std::endl;
         std::shared_ptr<codeg::MemoryModule> memory = std::make_shared<codeg::MM1_64k>();
         memory->set(0, buffer, finalSize);
         delete[] buffer;
 
-        codeg::ConsoleInfoWrite("Creating the motherboard and plug the memory module ...");
+        ConsoleInfo << "Creating the motherboard and plug the memory module ..." << std::endl;
         codeg::GCM_5_1_SPS1 motherboard;
         motherboard.memoryPlug(motherboard.getMemorySourceIndex(), memory);
 
@@ -179,9 +180,9 @@ int main(int argc, char **argv)
         uartCard->setInputBuffer("test_hello\n");
         motherboard.peripheralPlug(0, uartCard);
 
-        codeg::ConsoleInfoWrite("ok !");
+        ConsoleInfo << "ok !" << std::endl;
 
-        codeg::ConsoleInfoWrite("Waiting user input");
+        ConsoleInfo << "Waiting user input" << std::endl;
 
         std::string userCommand;
         do
@@ -193,7 +194,7 @@ int main(int argc, char **argv)
             std::vector<std::string> splitedUserCommand;
             codeg::Split(userCommand, splitedUserCommand, ' ');
 
-            codeg::ConsoleInfoWrite("user command : \"%\"", userCommand);
+            ConsoleInfo << "user command : \"" << userCommand << "\"" << std::endl;
 
             if (userCommand == "help")
             {
@@ -210,18 +211,18 @@ int main(int argc, char **argv)
             else if (userCommand == "reset")
             {
                 motherboard.hardReset();
-                codeg::ConsoleInfoWrite("pc: % (%)", motherboard.getProgramCounter(),
-                                        codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
+                ConsoleInfo << "pc: "<< motherboard.getProgramCounter() <<" ("
+                                     << codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) << ")";
             }
             else if (userCommand == "flushUart")
             {
                 if (uartCard->getOutputBuffer().empty())
                 {
-                    codeg::ConsoleWarningWrite("buffer is empty");
+                    ConsoleWarning << "buffer is empty" << std::endl;
                 }
                 else
                 {
-                    codeg::ConsoleInfoWrite("buffer: \"%\"", uartCard->getOutputBuffer());
+                    ConsoleInfo << "buffer: \"" << uartCard->getOutputBuffer() << "\"" << std::endl;
                     uartCard->clearOutputBuffer();
                 }
             }
@@ -233,12 +234,13 @@ int main(int argc, char **argv)
                     {
                         if (splitedUserCommand.size() == 2)
                         {
-                            codeg::ConsoleInfoWrite("% (%)", motherboard.getProgramCounter(),
-                                                    codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
+                            ConsoleInfo << motherboard.getProgramCounter()
+                                        << " ("<< codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) <<")"
+                                        << std::endl;
                         }
                         else
                         {
-                            codeg::ConsoleErrorWrite("usage: read pc");
+                            ConsoleError << "usage: read pc" << std::endl;
                         }
                     }
                     else if (splitedUserCommand[1] == "mem")
@@ -259,21 +261,21 @@ int main(int argc, char **argv)
                                         uint8_t data;
                                         if ( slot->_mem->get(addressValue, data) )
                                         {
-                                            codeg::ConsoleInfoWrite("%", codeg::ValueToHex(data, 2));
+                                            ConsoleInfo << codeg::ValueToHex(data, 2) << std::endl;
                                         }
                                         else
                                         {
-                                            codeg::ConsoleErrorWrite("address out of range (max: %)", slot->_mem->getMemorySize());
+                                            ConsoleError << "address out of range (max: "<< slot->_mem->getMemorySize() <<")" << std::endl;
                                         }
                                     }
                                     else
                                     {
-                                        codeg::ConsoleErrorWrite("no memory plugged in this slot");
+                                        ConsoleError << "no memory plugged in this slot" << std::endl;
                                     }
                                 }
                                 else
                                 {
-                                    codeg::ConsoleErrorWrite("unknown slot %", splitedUserCommand[3]);
+                                    ConsoleError << "unknown slot " << splitedUserCommand[3] << std::endl;
                                 }
                             }
                             else if (splitedUserCommand[2] == "p")
@@ -290,31 +292,31 @@ int main(int argc, char **argv)
                                         uint8_t data;
                                         if ( slot->_mem->get(addressValue, data) )
                                         {
-                                            codeg::ConsoleInfoWrite("%", codeg::ValueToHex(data, 2));
+                                            ConsoleInfo << codeg::ValueToHex(data, 2) << std::endl;
                                         }
                                         else
                                         {
-                                            codeg::ConsoleErrorWrite("address out of range (max: %)", slot->_mem->getMemorySize());
+                                            ConsoleError << "address out of range (max: "<< slot->_mem->getMemorySize() <<")" << std::endl;
                                         }
                                     }
                                     else
                                     {
-                                        codeg::ConsoleErrorWrite("no memory plugged in this slot");
+                                        ConsoleError << "no memory plugged in this slot" << std::endl;
                                     }
                                 }
                                 else
                                 {
-                                    codeg::ConsoleErrorWrite("unknown slot %", splitedUserCommand[3]);
+                                    ConsoleError << "unknown slot " << splitedUserCommand[3] << std::endl;
                                 }
                             }
                             else
                             {
-                                codeg::ConsoleErrorWrite("please put \"m\" (motherboard) or \"p\" (processor)");
+                                ConsoleError << "please put \"m\" (motherboard) or \"p\" (processor)" << std::endl;
                             }
                         }
                         else
                         {
-                            codeg::ConsoleErrorWrite("usage: read mem [\"m\"/\"p\"] [slot] [address]");
+                            ConsoleError << "usage: read mem [\"m\"/\"p\"] [slot] [address]" << std::endl;
                         }
                     }
                     else if (splitedUserCommand[1] == "bus")
@@ -324,34 +326,30 @@ int main(int argc, char **argv)
                             if ( motherboard._processor._busses.exist(splitedUserCommand[2]) )
                             {
                                 const codeg::Bus& bus = motherboard._processor._busses.get(splitedUserCommand[2]);
-                                codeg::ConsoleInfoWrite("[%] = % (%)",
-                                                        splitedUserCommand[2],
-                                                        bus.get(),
-                                                        codeg::ValueToHex(bus.get(), 8, true));
+                                ConsoleInfo << "["<< splitedUserCommand[2] <<"] = "<< bus.get()
+                                            <<" ("<< codeg::ValueToHex(bus.get(), 8, true) <<")" << std::endl;
                             }
                             else
                             {
-                                codeg::ConsoleErrorWrite("bus [%] doesn't exist", splitedUserCommand[2]);
+                                ConsoleError << "bus ["<< splitedUserCommand[2] <<"] doesn't exist" << std::endl;
                             }
                         }
                         else if (splitedUserCommand.size() == 2)
                         {
                             for (const auto& bus : motherboard._processor._busses)
                             {
-                                codeg::ConsoleInfoWrite("[%] = % (%)",
-                                                        bus.first,
-                                                        bus.second.get(),
-                                                        codeg::ValueToHex(bus.second.get(), 8, true));
+                                ConsoleInfo << "["<< bus.first <<"] = "<< bus.second.get()
+                                            <<" ("<< codeg::ValueToHex(bus.second.get(), 8, true) <<")" << std::endl;
                             }
                         }
                         else
                         {
-                            codeg::ConsoleErrorWrite("usage: read bus ([name])");
+                            ConsoleError << "usage: read bus ([name])" << std::endl;
                         }
                     }
                     else
                     {
-                        codeg::ConsoleErrorWrite("usage: read [\"pc\"/\"mem\"/\"bus\"] ...");
+                        ConsoleError << "usage: read [\"pc\"/\"mem\"/\"bus\"] ..." << std::endl;
                     }
                 }
                 else if (splitedUserCommand[0] == "execute")
@@ -364,16 +362,17 @@ int main(int argc, char **argv)
                         {
                             if ( !motherboard._processor.clockUntilSync(20) )
                             {
-                                codeg::ConsoleErrorWrite("max iteration reached !");
+                                ConsoleError << "max iteration reached !" << std::endl;
                                 break;
                             }
                         }
-                        codeg::ConsoleInfoWrite("pc: % (%)", motherboard.getProgramCounter(),
-                                                codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
+                        ConsoleInfo << "pc: "<< motherboard.getProgramCounter()
+                                             <<" ("<< codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) <<")"
+                                             << std::endl;
                     }
                     else
                     {
-                        codeg::ConsoleErrorWrite("usage: execute [clock cycle]");
+                        ConsoleError << "usage: execute [clock cycle]" << std::endl;
                     }
                 }
                 else if (splitedUserCommand[0] == "goto")
@@ -387,49 +386,51 @@ int main(int argc, char **argv)
                         {
                             if (motherboard.getProgramCounter() == memoryAddress)
                             {
-                                codeg::ConsoleInfoWrite("memory reached !");
+                                ConsoleInfo << "memory reached !" << std::endl;
                                 reached = true;
                                 break;
                             }
 
                             if ( !motherboard._processor.clockUntilSync(20) )
                             {
-                                codeg::ConsoleErrorWrite("clock cycle: max iteration reached !");
+                                ConsoleError << "clock cycle: max iteration reached !" << std::endl;
                                 break;
                             }
                         }
                         if (!reached)
                         {
-                            codeg::ConsoleErrorWrite("max iteration reached !");
-                            codeg::ConsoleInfoWrite("pc: % (%)", motherboard.getProgramCounter(),
-                                                    codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) );
+                            ConsoleError << "max iteration reached !" << std::endl;
+                            ConsoleInfo << "pc: "<< motherboard.getProgramCounter()
+                                        <<" ("<< codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) <<")"
+                                        << std::endl;
                         }
                     }
                     else
                     {
-                        codeg::ConsoleErrorWrite("usage: goto [address]");
+                        ConsoleError << "usage: goto [address]" << std::endl;
                     }
                 }
             }
             else
             {
-                codeg::ConsoleWarningWrite("unknown command or exit!");
+                ConsoleWarning << "unknown command or exit!" << std::endl;
             }
         }
         while (userCommand != "exit");
     }
     catch (const codeg::Error& e)
     {
-        codeg::ConsoleErrorWrite("error : %", e.what());
+        ConsoleError << "error : " <<  e.what() << std::endl;
         return -1;
     }
     catch (const std::exception& e)
     {
-        codeg::ConsoleFatalWrite("unknown exception : %", e.what());
+        ConsoleFatal << "unknown exception : " << e.what() << std::endl;
         return -1;
     }
 
-    codeg::LogClose();
+    codeg::varConsole->logClose();
+    delete codeg::varConsole;
 
     return 0;
 }

@@ -14,165 +14,135 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_CONSOLE_H_INCLUDED
-#define C_CONSOLE_H_INCLUDED
+#ifndef C_CONSOLE_HPP_INCLUDED
+#define C_CONSOLE_HPP_INCLUDED
 
-#include <string>
-#include <fstream>
 #include <iostream>
+#include <fstream>
 #include <filesystem>
+#include <ctime>
+#include <iomanip>
+
+#define ConsoleNone *codeg::varConsole
+
+#define ConsoleFatal *codeg::varConsole << codeg::ConsoleOutputType::OUTPUT_FATAL
+#define ConsoleError *codeg::varConsole << codeg::ConsoleOutputType::OUTPUT_ERROR
+#define ConsoleWarning *codeg::varConsole << codeg::ConsoleOutputType::OUTPUT_WARNING
+#define ConsoleSyntax *codeg::varConsole << codeg::ConsoleOutputType::OUTPUT_SYNTAX
+#define ConsoleInfo *codeg::varConsole << codeg::ConsoleOutputType::OUTPUT_INFO
 
 namespace codeg
 {
 
-extern std::ofstream _fileLog;
+enum ConsoleOutputType
+{
+    OUTPUT_NONE,
+
+    OUTPUT_FATAL,
+    OUTPUT_ERROR,
+    OUTPUT_WARNING,
+    OUTPUT_SYNTAX,
+    OUTPUT_INFO
+};
+
+class Console
+{
+public:
+    using CharT = std::ostream::char_type;
+    using Traits = std::char_traits<CharT>;
+
+    Console() = default;
+    ~Console() = default;
+
+    bool logOpen(const std::filesystem::path& path);
+    void logClose();
+
+    codeg::Console& operator <<( std::basic_ostream<CharT,Traits>& (*func)(std::basic_ostream<CharT,Traits>&) )
+    {
+        if (func == &std::endl<CharT,Traits> )
+        {
+            std::cout << "\x1b[0m\n";
+            if (this->g_log)
+            {
+                this->g_log << '\n';
+            }
+        }
+        return *this;
+    }
+
+    template<class T>
+    codeg::Console& operator <<(const T& val)
+    {
+        if constexpr ( std::is_same<T, codeg::ConsoleOutputType>::value )
+        {
+            std::time_t t = std::time(nullptr);
+            auto localTime = std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S");
+
+            switch ( static_cast<codeg::ConsoleOutputType>(val) )
+            {
+            case OUTPUT_FATAL:
+                std::cout << "\x1b[31m";
+                std::cout << "[fatal](" << localTime << ") ";
+                if (this->g_log)
+                {
+                    this->g_log << "[fatal](" << localTime << ") ";
+                }
+                break;
+            case OUTPUT_ERROR:
+                std::cout << "\x1b[31m";
+                std::cout << "[error](" << localTime << ") ";
+                if (this->g_log)
+                {
+                    this->g_log << "[error](" << localTime << ") ";
+                }
+                break;
+            case OUTPUT_WARNING:
+                std::cout << "\x1b[36m";
+                std::cout << "[warning](" << localTime << ") ";
+                if (this->g_log)
+                {
+                    this->g_log << "[warning](" << localTime << ") ";
+                }
+                break;
+            case OUTPUT_SYNTAX:
+                std::cout << "\x1b[33m";
+                std::cout << "[syntax error](" << localTime << ") ";
+                if (this->g_log)
+                {
+                    this->g_log << "[syntax error](" << localTime<< ") ";
+                }
+                break;
+            case OUTPUT_INFO:
+                std::cout << "[info](" << localTime << ") ";
+                if (this->g_log)
+                {
+                    this->g_log << "[info](" << localTime << ") ";
+                }
+                break;
+            default:
+                break;
+            }
+        }
+        else
+        {
+            std::cout << val;
+            if (this->g_log)
+            {
+                this->g_log << val;
+            }
+        }
+
+        return *this;
+    }
+
+private:
+    std::ofstream g_log;
+};
+
+extern codeg::Console* varConsole;
 
 int ConsoleInit();
 
-bool LogOpen(const std::filesystem::path& path);
-void LogClose();
-
-enum ConsoleOutputType
-{
-    CONSOLE_TYPE_NONE,
-
-    CONSOLE_TYPE_INFO,
-    CONSOLE_TYPE_ERROR,
-    CONSOLE_TYPE_FATAL,
-    CONSOLE_TYPE_WARNING,
-    CONSOLE_TYPE_SYNTAX
-};
-
-void ConsoleWrite(codeg::ConsoleOutputType type, const char* str);
-template<typename T, typename... TArgs>
-void ConsoleWrite(codeg::ConsoleOutputType type, const char* str, T value, TArgs... args)
-{
-    std::time_t t = std::time(nullptr);
-    auto tData = std::put_time(std::localtime(&t), "%d.%m.%Y - %H:%M:%S");
-
-    switch (type)
-    {
-    case CONSOLE_TYPE_INFO:
-        std::cout << "[info](" << tData << ") ";
-        if (_fileLog)
-        {
-            _fileLog << "[info](" << tData << ") ";
-        }
-        break;
-    case CONSOLE_TYPE_ERROR:
-        std::cout << "\x1b[31m";
-        std::cout << "[error](" << tData << ") ";
-        if (_fileLog)
-        {
-            _fileLog << "[error](" << tData << ") ";
-        }
-        break;
-    case CONSOLE_TYPE_FATAL:
-        std::cout << "\x1b[31m";
-        std::cout << "[fatal](" << tData << ") ";
-        if (_fileLog)
-        {
-            _fileLog << "[error](" << tData << ") ";
-        }
-        break;
-    case CONSOLE_TYPE_WARNING:
-        std::cout << "\x1b[36m";
-        std::cout << "[warning](" << tData << ") ";
-        if (_fileLog)
-        {
-            _fileLog << "[warning](" << tData << ") ";
-        }
-        break;
-    case CONSOLE_TYPE_SYNTAX:
-        std::cout << "\x1b[33m";
-        std::cout << "[syntax error](" << tData << ") ";
-        if (_fileLog)
-        {
-            _fileLog << "[syntax error](" << tData << ") ";
-        }
-        break;
-    default:
-        break;
-    }
-
-    while (*str != '\0')
-    {
-        if (*str == '%')
-        {
-            std::cout << value;
-            if (_fileLog)
-            {
-                _fileLog << value;
-            }
-
-            codeg::ConsoleWrite(codeg::CONSOLE_TYPE_NONE, str + 1, args...);
-            return;
-        }
-        std::cout << *str;
-        if (_fileLog)
-        {
-            _fileLog << *str;
-        }
-
-        ++str;
-    }
-
-    std::cout << "\x1b[0m" << std::endl;
-
-    std::cout.flush();
-    _fileLog.flush();
-}
-
-inline void ConsoleFatalWrite(const char* str)
-{
-    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_FATAL, str);
-}
-template<typename T, typename... TArgs>
-inline void ConsoleFatalWrite(const char* str, T value, TArgs... args)
-{
-    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_FATAL, str, value, args...);
-}
-
-inline void ConsoleErrorWrite(const char* str)
-{
-    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_ERROR, str);
-}
-template<typename T, typename... TArgs>
-inline void ConsoleErrorWrite(const char* str, T value, TArgs... args)
-{
-    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_ERROR, str, value, args...);
-}
-
-inline void ConsoleWarningWrite(const char* str)
-{
-    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_WARNING, str);
-}
-template<typename T, typename... TArgs>
-inline void ConsoleWarningWrite(const char* str, T value, TArgs... args)
-{
-    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_WARNING, str, value, args...);
-}
-
-inline void ConsoleInfoWrite(const char* str)
-{
-    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_INFO, str);
-}
-template<typename T, typename... TArgs>
-inline void ConsoleInfoWrite(const char* str, T value, TArgs... args)
-{
-    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_INFO, str, value, args...);
-}
-
-inline void ConsoleSyntaxWrite(const char* str)
-{
-    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_SYNTAX, str);
-}
-template<typename T, typename... TArgs>
-inline void ConsoleSyntaxWrite(const char* str, T value, TArgs... args)
-{
-    codeg::ConsoleWrite(codeg::CONSOLE_TYPE_SYNTAX, str, value, args...);
-}
-
 }//end codeg
 
-#endif // C_CONSOLE_H_INCLUDED
+#endif // C_CONSOLE_HPP_INCLUDED

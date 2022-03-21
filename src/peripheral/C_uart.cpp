@@ -55,7 +55,7 @@ void UART_peripheral_card_A_1_1::update([[maybe_unused]] codeg::Motherboard& mot
             {
                 if ( static_cast<char>(this->g_txData) == '\n' )
                 {
-                    codeg::ConsoleInfoWrite("uart: receiving \"%\"", codeg::ReplaceNonPrintableAsciiChar(this->g_outputBuffer));
+                    ConsoleInfo << "uart: receiving \""<< codeg::ReplaceNonPrintableAsciiChar(this->g_outputBuffer) <<"\"" << std::endl;
                     this->g_outputBuffer.clear();
                 }
                 else
@@ -63,7 +63,7 @@ void UART_peripheral_card_A_1_1::update([[maybe_unused]] codeg::Motherboard& mot
                     this->g_outputBuffer.push_back( static_cast<char>(this->g_txData) );
                     if (this->g_outputBuffer.size() >= 20)
                     {
-                        codeg::ConsoleInfoWrite("uart: (overflow) receiving \"%\"", codeg::ReplaceNonPrintableAsciiChar(this->g_outputBuffer));
+                        ConsoleInfo << "uart: (overflow) receiving \""<< codeg::ReplaceNonPrintableAsciiChar(this->g_outputBuffer) <<"\"" << std::endl;
                         this->g_outputBuffer.clear();
                     }
                 }
