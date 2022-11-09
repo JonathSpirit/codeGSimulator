@@ -30,9 +30,10 @@ std::unordered_map<std::string, std::unique_ptr<MemoryModuleClassTypeBase> > gDa
 void RegisterNewMemoryModuleType(std::unique_ptr<MemoryModuleClassTypeBase>&& classType)
 {
     auto it = gData.find(classType->getType());
-    if (it != gData.end())
+    if (it == gData.end())
     {
-        gData[classType->getType()] = std::move(classType);
+        std::string name = classType->getType();
+        gData[std::move(name)] = std::move(classType);
     }
 }
 MemoryModule* GetNewMemoryModule(const std::string& type, codeg::MemorySize memorySize)
