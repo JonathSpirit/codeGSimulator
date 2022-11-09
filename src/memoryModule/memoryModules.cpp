@@ -14,53 +14,41 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef C_MM1_HPP_INCLUDED
-#define C_MM1_HPP_INCLUDED
-
 #include "memoryModule/memoryModules.hpp"
-#include <vector>
+#include <unordered_map>
 
 namespace codeg
 {
 
-class MM1 : public codeg::MemoryModule
+namespace
 {
-public:
-    explicit MM1(codeg::MemorySize memorySize);
-    ~MM1() override = default;
 
-    bool set(codeg::MemoryAddress address, uint8_t data) override;
-    bool set(codeg::MemoryAddress address, uint8_t* data, codeg::MemorySize dataSize) override;
-    bool get(codeg::MemoryAddress address, uint8_t& data) const override;
-    bool get(codeg::MemoryAddress startAddress, codeg::MemorySize addressCount, uint8_t* data, codeg::MemorySize dataSize) const override;
+std::unordered_map<std::string, std::unique_ptr<MemoryModuleClassTypeBase> > gData;
 
-    [[nodiscard]] std::string getType() const override;
+}//end
 
-private:
-    std::vector<uint8_t> g_data;
-};
-
-class MM1_64k : public codeg::MM1
+void RegisterNewMemoryModuleType(std::unique_ptr<MemoryModuleClassTypeBase>&& classType)
 {
-public:
-    MM1_64k();
-    ~MM1_64k() override = default;
-};
-
-class MM1_32k : public codeg::MM1
+    auto it = gData.find(classType->getType());
+    if (it != gData.end())
+    {
+        gData[classType->getType()] = std::move(classType);
+    }
+}
+MemoryModule* GetNewMemoryModule(const std::string& type, codeg::MemorySize memorySize)
 {
-public:
-    MM1_32k();
-    ~MM1_32k() override = default;
-};
+    auto it = gData.find(type);
+    if (it != gData.end())
+    {
+        auto* memory = it->second->create(memorySize);
 
-class MM1_16k : public codeg::MM1
-{
-public:
-    MM1_16k();
-    ~MM1_16k() override = default;
-};
+        if (memory->getMemorySize() == memorySize)
+        {
+            return memory;
+        }
+        delete memory;
+    }
+    return nullptr;
+}
 
 }//end codeg
-
-#endif // C_MM1_HPP_INCLUDED

@@ -27,8 +27,8 @@ GCM_5_1_SPS1::GCM_5_1_SPS1()
     this->_g_peripheralSlots.push_back( {nullptr, codeg::PeripheralType::TYPE_PP1, true} );
     this->_g_peripheralSlots.push_back( {std::make_shared<codeg::MemoryController>(), codeg::PeripheralType::TYPE_HARDWARE, false} );
 
-    this->_g_memorySlots.push_back( {nullptr, codeg::MemoryModuleType::TYPE_MM1, 3, true, true} );
-    this->_g_memorySlots.push_back( {nullptr, codeg::MemoryModuleType::TYPE_MM1, 3, true, true} );
+    this->_g_memorySlots.push_back( {nullptr, "MM1", 3, true, true} );
+    this->_g_memorySlots.push_back( {nullptr, "MM1", 3, true, true} );
 
     this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).attach(this, &codeg::GCM_5_1_SPS1::signal_ADDSRC_CLK);
     this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_JMPSRC_CLK).attach(this, &codeg::GCM_5_1_SPS1::signal_JMPSRC_CLK);

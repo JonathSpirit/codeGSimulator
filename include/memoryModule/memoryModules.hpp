@@ -25,22 +25,6 @@
 namespace codeg
 {
 
-enum MemoryModuleType
-{
-    TYPE_MM1
-};
-
-inline std::string GetMemoryModuleTypeName(MemoryModuleType type)
-{
-    switch (type)
-    {
-    case TYPE_MM1:
-        return "MM1";
-    default:
-        return "unknown";
-    }
-}
-
 using AddressBusSize = uint8_t;
 using MemorySize = std::size_t;
 using MemoryAddress = std::size_t;
@@ -81,7 +65,7 @@ public:
     virtual bool get(codeg::MemoryAddress address, uint8_t& data) const = 0;
     virtual bool get(codeg::MemoryAddress startAddress, codeg::MemorySize addressCount, uint8_t* data, codeg::MemorySize dataSize) const = 0;
 
-    [[nodiscard]] virtual codeg::MemoryModuleType getType() const = 0;
+    [[nodiscard]] virtual std::string getType() const = 0;
 
 protected:
     codeg::MemorySize _g_memorySize;
@@ -90,7 +74,7 @@ protected:
 struct MemoryModuleSlot
 {
     std::shared_ptr<codeg::MemoryModule> _mem;
-    codeg::MemoryModuleType _slotType;
+    std::string _slotType;
 
     codeg::AddressBusSize _slotBusSizeCapacity;
     bool _isSourceCapable;
@@ -181,6 +165,42 @@ protected:
     std::vector<codeg::MemoryModuleSlot> _g_memorySlots;
     std::size_t _g_memorySource{0};
 };
+
+class MemoryModuleClassTypeBase
+{
+public:
+    MemoryModuleClassTypeBase(std::string type) :
+            _g_type(std::move(type))
+    {}
+    virtual ~MemoryModuleClassTypeBase() = default;
+
+    [[nodiscard]] virtual MemoryModule* create(codeg::MemorySize memorySize) const = 0;
+
+    const std::string& getType()
+    {
+        return this->_g_type;
+    }
+
+protected:
+    std::string _g_type;
+};
+template<class T>
+class MemoryModuleClassType : public MemoryModuleClassTypeBase
+{
+public:
+    MemoryModuleClassType() :
+            MemoryModuleClassTypeBase(T{0}.getType())
+    {}
+    ~MemoryModuleClassType() override = default;
+
+    [[nodiscard]] MemoryModule* create(codeg::MemorySize memorySize) const override
+    {
+        return new T{memorySize};
+    }
+};
+
+void RegisterNewMemoryModuleType(std::unique_ptr<MemoryModuleClassTypeBase>&& classType);
+MemoryModule* GetNewMemoryModule(const std::string& type, codeg::MemorySize memorySize);
 
 }//end codeg
 

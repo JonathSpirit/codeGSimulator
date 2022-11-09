@@ -92,6 +92,7 @@ target_sources(${PROJECT_NAME} PUBLIC "src/C_console.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_string.cpp")
 
 target_sources(${PROJECT_NAME} PUBLIC "src/memoryModule/C_MM1.cpp")
+target_sources(${PROJECT_NAME} PUBLIC "src/memoryModule/memoryModules.cpp")
 
 target_sources(${PROJECT_NAME} PUBLIC "src/peripheral/C_uart.cpp")
 
@@ -108,7 +109,7 @@ target_sources(${PROJECT_NAME} PUBLIC "include/C_bus.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_signal.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_codeg.hpp")
 
-target_sources(${PROJECT_NAME} PUBLIC "include/memoryModule/C_memoryModule.hpp")
+target_sources(${PROJECT_NAME} PUBLIC "include/memoryModule/memoryModules.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/memoryModule/C_MM1.hpp")
 
 target_sources(${PROJECT_NAME} PUBLIC "include/peripheral/C_peripheral.hpp")

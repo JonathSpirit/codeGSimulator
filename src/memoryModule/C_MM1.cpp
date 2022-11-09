@@ -79,9 +79,9 @@ bool MM1::get(codeg::MemoryAddress startAddress, codeg::MemorySize addressCount,
     return false;
 }
 
-codeg::MemoryModuleType MM1::getType() const
+std::string MM1::getType() const
 {
-    return codeg::MemoryModuleType::TYPE_MM1;
+    return "MM1";
 }
 
 ///MM1_xk

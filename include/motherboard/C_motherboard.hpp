@@ -18,7 +18,7 @@
 #define C_MOTHERBOARD_HPP_INCLUDED
 
 #include <cstdint>
-#include "memoryModule/C_memoryModule.hpp"
+#include "memoryModule/memoryModules.hpp"
 #include "peripheral/C_peripheral.hpp"
 
 namespace codeg

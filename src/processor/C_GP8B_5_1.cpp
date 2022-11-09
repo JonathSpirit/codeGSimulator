@@ -22,7 +22,7 @@ namespace codeg
 
 GP8B_5_1::GP8B_5_1()
 {
-    this->_g_memorySlots.push_back( {nullptr, codeg::MemoryModuleType::TYPE_MM1, 2, false, true} );
+    this->_g_memorySlots.push_back( {nullptr, "MM1", 2, false, true} );
 }
 
 void GP8B_5_1::clock()

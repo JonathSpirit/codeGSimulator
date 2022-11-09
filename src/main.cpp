@@ -51,6 +51,8 @@ int main(int argc, char **argv)
         std::cout << "Warning, bad console init, the console can be ugly now ! (error: "<<err<<")" << std::endl;
     }
 
+    codeg::RegisterNewMemoryModuleType(std::make_unique<codeg::MemoryModuleClassType<codeg::MM1> >());
+
     fs::path fileInPath;
     fs::path fileLogOutPath;
     bool writeLogFile = true;
@@ -335,7 +337,7 @@ int main(int argc, char **argv)
                 {
                     for (std::size_t i=0; i<unpluggedMemories.size(); ++i)
                     {
-                        ConsoleInfo << "["<<i<<"] type: " << codeg::GetMemoryModuleTypeName(unpluggedMemories[i]->getType())
+                        ConsoleInfo << "["<<i<<"] type: " << unpluggedMemories[i]->getType()
                                     << " address bus size: " <<  unpluggedMemories[i]->getAddressBusSize()
                                     << " size: " << unpluggedMemories[i]->getMemorySize() << std::endl;
                     }
