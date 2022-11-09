@@ -203,6 +203,7 @@ int main(int argc, char **argv)
                           << "\tread mem [\"m\"/\"p\"] [slot] [address] -> read in a motherboard/processor memory slot at address\n"
                           << "\tread bus [name] -> read a specific bus value\n"
                           << "\tread bus -> read all bus value\n"
+                          << "\tinfo [\"motherboard\"] -> print information about a specific peripheral\n"
                           << "\texecute [cycle] -> execute a number of clock cycle (clock until sync)\n"
                           << "\tgoto [address] -> execute a number of clock cycle (clock until sync) until the address is reached (or max iterations)\n"
                           << "\treset -> do a hard reset\n"
@@ -350,6 +351,27 @@ int main(int argc, char **argv)
                     else
                     {
                         ConsoleError << "usage: read [\"pc\"/\"mem\"/\"bus\"] ..." << std::endl;
+                    }
+                }
+                else if (splitedUserCommand[0] == "info")
+                {
+                    if (splitedUserCommand.size() == 2)
+                    {
+                        if (splitedUserCommand[1] == "motherboard")
+                        {
+                            ConsoleInfo << "Name: --NAME--\n";
+                            ConsoleInfo << "Peripheral slot size: " << motherboard.getPeripheralSlotSize() << '\n';
+                            ConsoleInfo << "Memory slot size: " << motherboard.getMemorySlotSize() << " with " << 0 << " sources slot\n";
+                            ConsoleInfo << "Program counter: " << motherboard.getProgramCounter() << std::endl;
+                        }
+                        else
+                        {
+                            ConsoleError << "usage: info [\"motherboard\"]" << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        ConsoleError << "usage: info [\"motherboard\"]" << std::endl;
                     }
                 }
                 else if (splitedUserCommand[0] == "execute")
