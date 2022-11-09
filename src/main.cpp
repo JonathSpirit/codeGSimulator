@@ -88,7 +88,7 @@ int main(int argc, char **argv)
     }
 
     ///Opening files
-    std::ifstream fileIn(fileInPath, std::ios::binary );
+    std::ifstream fileIn(fileInPath, std::ios::binary);
     if ( !fileIn )
     {
         std::cout << "Can't read the file " << fileInPath << std::endl;
@@ -120,6 +120,8 @@ int main(int argc, char **argv)
         std::size_t _maxArguments;
         std::function<bool(const std::vector<std::string>&)> _func;
     };
+
+    std::vector<std::shared_ptr<codeg::MemoryModule> > unpluggedMemories;
 
     try
     {
@@ -178,7 +180,7 @@ int main(int argc, char **argv)
                             << std::endl;
                 return true;
             }},
-            {"read_mem", R"(read_mem ["m"/"p"] [slot] [address])", "read the program counter", 3,3, [&]([[maybe_unused]] const std::vector<std::string>& args){
+            {"read_mem", R"(read_mem ["m"/"p"] [slot] [address])", "read in a motherboard/processor memory slot", 3,3, [&]([[maybe_unused]] const std::vector<std::string>& args){
                 if (args[0] == "m")
                 {
                     std::size_t slotValue = std::strtoul(args[1].c_str(), nullptr, 0);
@@ -279,13 +281,64 @@ int main(int argc, char **argv)
                 }
                 return true;
             }},
-            {"info", "info [\"motherboard\"]", "print information about a specific peripheral", 1,1, [&]([[maybe_unused]] const std::vector<std::string>& args){
+            {"unplug", R"(unplug ["m"/"p"] [slot])", "unplug a memory module on the motherboard/processor", 2,2, [&]([[maybe_unused]] const std::vector<std::string>& args){
+                if (args[0] == "m")
+                {
+                    std::size_t slotValue = std::strtoul(args[1].c_str(), nullptr, 0);
+
+                    auto memory = motherboard.memoryUnplug(slotValue);
+
+                    if (memory)
+                    {
+                        unpluggedMemories.push_back(std::move(memory));
+                        ConsoleInfo << "correctly unplugged the memory module from the slot: " << slotValue << std::endl;
+                    }
+                    else
+                    {
+                        ConsoleError << "can't unplug the memory module from the slot: " << slotValue << std::endl;
+                        return false;
+                    }
+                }
+                else if (args[0] == "p")
+                {
+                    std::size_t slotValue = std::strtoul(args[1].c_str(), nullptr, 0);
+
+                    auto memory = motherboard._processor.memoryUnplug(slotValue);
+
+                    if (memory)
+                    {
+                        unpluggedMemories.push_back(std::move(memory));
+                        ConsoleInfo << "correctly unplugged the memory module from the slot: " << slotValue << std::endl;
+                    }
+                    else
+                    {
+                        ConsoleError << "can't unplug the memory module from the slot: " << slotValue << std::endl;
+                        return false;
+                    }
+                }
+                else
+                {
+                    ConsoleError << R"(please put "m" (motherboard) or "p" (processor))" << std::endl;
+                    return false;
+                }
+                return true;
+            }},
+            {"info", R"(info ["motherboard"/"memUnplugged"])", "print information about peripherals", 1,1, [&]([[maybe_unused]] const std::vector<std::string>& args){
                 if (args[0] == "motherboard")
                 {
                     ConsoleInfo << "Name: --NAME--\n";
                     ConsoleInfo << "Peripheral slot size: " << motherboard.getPeripheralSlotSize() << '\n';
                     ConsoleInfo << "Memory slot size: " << motherboard.getMemorySlotSize() << " with " << 0 << " sources slot\n";
                     ConsoleInfo << "Program counter: " << motherboard.getProgramCounter() << std::endl;
+                }
+                else if (args[0] == "memUnplugged")
+                {
+                    for (std::size_t i=0; i<unpluggedMemories.size(); ++i)
+                    {
+                        ConsoleInfo << "["<<i<<"] type: " << codeg::GetMemoryModuleTypeName(unpluggedMemories[i]->getType())
+                                    << " address bus size: " <<  unpluggedMemories[i]->getAddressBusSize()
+                                    << " size: " << unpluggedMemories[i]->getMemorySize() << std::endl;
+                    }
                 }
                 else
                 {

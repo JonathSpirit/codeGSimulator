@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <string>
 
 namespace codeg
 {
@@ -28,6 +29,17 @@ enum MemoryModuleType
 {
     TYPE_MM1
 };
+
+inline std::string GetMemoryModuleTypeName(MemoryModuleType type)
+{
+    switch (type)
+    {
+    case TYPE_MM1:
+        return "MM1";
+    default:
+        return "unknown";
+    }
+}
 
 using AddressBusSize = uint8_t;
 using MemorySize = std::size_t;
