@@ -399,6 +399,21 @@ int main(int argc, char **argv)
                 }
                 return true;
             }},
+            {"erase_mem", R"(erase_mem [index])", "erase a memory module into the unplugged list", 1,1, [&]([[maybe_unused]] const std::vector<std::string>& args){
+                std::size_t unpluggedIndex = std::strtoul(args[0].c_str(), nullptr, 0);
+
+                if (unpluggedIndex < unpluggedMemories.size())
+                {
+                    unpluggedMemories.erase(unpluggedMemories.begin()+unpluggedIndex);
+                    ConsoleInfo << "correctly erased the memory at index " << unpluggedIndex << std::endl;
+                }
+                else
+                {
+                    ConsoleError << "memory at index " << unpluggedIndex << " doesn't exist" << std::endl;
+                    return false;
+                }
+                return true;
+            }},
             {"info", R"(info ["motherboard"/"memUnplugged"])", "print information about peripherals", 1,1, [&]([[maybe_unused]] const std::vector<std::string>& args){
                 if (args[0] == "motherboard")
                 {
