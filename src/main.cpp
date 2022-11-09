@@ -325,6 +325,62 @@ int main(int argc, char **argv)
                 }
                 return true;
             }},
+            {"plug", R"(plug ["m"/"p"] [slot] [index])", "plug a memory module on the motherboard/processor for the unplugged list", 3,3, [&]([[maybe_unused]] const std::vector<std::string>& args){
+                if (args[0] == "m")
+                {
+                    std::size_t slotValue = std::strtoul(args[1].c_str(), nullptr, 0);
+                    std::size_t unpluggedIndex = std::strtoul(args[2].c_str(), nullptr, 0);
+
+                    if (unpluggedIndex < unpluggedMemories.size())
+                    {
+                        if ( motherboard.memoryPlug(slotValue, unpluggedMemories[unpluggedIndex]) )
+                        {
+                            unpluggedMemories.erase(unpluggedMemories.begin()+unpluggedIndex);
+                            ConsoleInfo << "correctly plugged the memory in the slot: " << slotValue << std::endl;
+                        }
+                        else
+                        {
+                            ConsoleError << "can't plug the memory module in the slot: " << slotValue << std::endl;
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        ConsoleError << "unplugged memory "<< unpluggedIndex <<" doesn't exist" << std::endl;
+                        return false;
+                    }
+                }
+                else if (args[0] == "p")
+                {
+                    std::size_t slotValue = std::strtoul(args[1].c_str(), nullptr, 0);
+                    std::size_t unpluggedIndex = std::strtoul(args[2].c_str(), nullptr, 0);
+
+                    if (unpluggedIndex < unpluggedMemories.size())
+                    {
+                        if ( motherboard._processor.memoryPlug(slotValue, unpluggedMemories[unpluggedIndex]) )
+                        {
+                            unpluggedMemories.erase(unpluggedMemories.begin()+unpluggedIndex);
+                            ConsoleInfo << "correctly plugged the memory in the slot: " << slotValue << std::endl;
+                        }
+                        else
+                        {
+                            ConsoleError << "can't plug the memory module in the slot: " << slotValue << std::endl;
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        ConsoleError << "unplugged memory "<< unpluggedIndex <<" doesn't exist" << std::endl;
+                        return false;
+                    }
+                }
+                else
+                {
+                    ConsoleError << R"(please put "m" (motherboard) or "p" (processor))" << std::endl;
+                    return false;
+                }
+                return true;
+            }},
             {"info", R"(info ["motherboard"/"memUnplugged"])", "print information about peripherals", 1,1, [&]([[maybe_unused]] const std::vector<std::string>& args){
                 if (args[0] == "motherboard")
                 {
