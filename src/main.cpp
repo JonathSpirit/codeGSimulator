@@ -381,6 +381,24 @@ int main(int argc, char **argv)
                 }
                 return true;
             }},
+            {"new_mem", R"(new_mem [type] [size])", "create a new memory module into the unplugged list", 2,2, [&]([[maybe_unused]] const std::vector<std::string>& args){
+                const std::string& memType = args[0];
+                std::size_t size = std::strtoul(args[1].c_str(), nullptr, 0);
+
+                auto memory = std::shared_ptr<codeg::MemoryModule>(codeg::GetNewMemoryModule(memType, size));
+
+                if (memory != nullptr)
+                {
+                    unpluggedMemories.push_back(std::move(memory));
+                    ConsoleInfo << "correctly created the memory at index " << unpluggedMemories.size()-1 << std::endl;
+                }
+                else
+                {
+                    ConsoleError << "memory type \"" << memType << "\" doesn't exist" << std::endl;
+                    return false;
+                }
+                return true;
+            }},
             {"info", R"(info ["motherboard"/"memUnplugged"])", "print information about peripherals", 1,1, [&]([[maybe_unused]] const std::vector<std::string>& args){
                 if (args[0] == "motherboard")
                 {
