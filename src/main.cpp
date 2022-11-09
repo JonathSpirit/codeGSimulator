@@ -404,7 +404,7 @@ int main(int argc, char **argv)
                 {
                     ConsoleInfo << "Name: --NAME--\n";
                     ConsoleInfo << "Peripheral slot size: " << motherboard.getPeripheralSlotSize() << '\n';
-                    ConsoleInfo << "Memory slot size: " << motherboard.getMemorySlotSize() << " with " << 0 << " sources slot\n";
+                    ConsoleInfo << "Memory slot size: " << motherboard.getMemorySlotSize() << " with " << motherboard.getSourceCapableSlotCount() << " sources slot\n";
                     for (std::size_t i=0; i<motherboard.getMemorySlotSize(); ++i)
                     {
                         const auto* slot = motherboard.getMemorySlot(i);

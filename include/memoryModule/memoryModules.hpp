@@ -144,6 +144,16 @@ public:
         return nullptr;
     }
 
+    [[nodiscard]] std::size_t getSourceCapableSlotCount() const
+    {
+        std::size_t size = 0;
+        for (const auto& slot : this->_g_memorySlots)
+        {
+            size += slot._isSourceCapable ? 1 : 0;
+        }
+        return size;
+    }
+
     bool setMemorySource(std::size_t index)
     {
         if (index < this->_g_memorySlots.size())
