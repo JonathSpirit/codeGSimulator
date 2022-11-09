@@ -405,13 +405,31 @@ int main(int argc, char **argv)
                     ConsoleInfo << "Name: --NAME--\n";
                     ConsoleInfo << "Peripheral slot size: " << motherboard.getPeripheralSlotSize() << '\n';
                     ConsoleInfo << "Memory slot size: " << motherboard.getMemorySlotSize() << " with " << 0 << " sources slot\n";
+                    for (std::size_t i=0; i<motherboard.getMemorySlotSize(); ++i)
+                    {
+                        const auto* slot = motherboard.getMemorySlot(i);
+
+                        ConsoleInfo << "\t[slot "<< i << "] source: " << std::boolalpha << slot->_isSourceCapable
+                                    << " pluggable: " << slot->_isPluggable << " busSizeCapacity: " << (int)slot->_slotBusSizeCapacity
+                                    << " type: " << slot->_slotType << std::endl;
+                        if (slot->_mem)
+                        {
+                            ConsoleInfo << "\t\t[plugged memory] type: " << slot->_mem->getType()
+                                        << " address bus size: " <<  slot->_mem->getAddressBusSize()
+                                        << " size: " << slot->_mem->getMemorySize() << std::endl;
+                        }
+                        else
+                        {
+                            ConsoleInfo << "\t\t[no memory plugged]" << std::endl;
+                        }
+                    }
                     ConsoleInfo << "Program counter: " << motherboard.getProgramCounter() << std::endl;
                 }
                 else if (args[0] == "memUnplugged")
                 {
                     for (std::size_t i=0; i<unpluggedMemories.size(); ++i)
                     {
-                        ConsoleInfo << "["<<i<<"] type: " << unpluggedMemories[i]->getType()
+                        ConsoleInfo << "\t["<<i<<"] type: " << unpluggedMemories[i]->getType()
                                     << " address bus size: " <<  unpluggedMemories[i]->getAddressBusSize()
                                     << " size: " << unpluggedMemories[i]->getMemorySize() << std::endl;
                     }
