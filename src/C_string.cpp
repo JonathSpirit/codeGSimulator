@@ -61,6 +61,8 @@ std::string RemoveExtraSpace(const std::string& str)
 }
 std::size_t Split(const std::string& str, std::vector<std::string>& buff, char delimiter)
 {
+    buff.clear();
+
     std::string buffStr;
     std::istringstream strStream(str);
     while (std::getline(strStream, buffStr, delimiter))

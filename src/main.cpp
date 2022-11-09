@@ -33,27 +33,12 @@
 
 #include "CMakeConfig.hpp"
 
+#include "CLI/App.hpp"
+#include "CLI/Formatter.hpp"
+#include "CLI/Config.hpp"
+
 namespace fs = std::filesystem;
 
-void printHelp()
-{
-    std::cout << "codeGSimulator usage :" << std::endl << std::endl;
-
-    std::cout << "Set the input file to be compiled" << std::endl;
-    std::cout << "\tcodeGSimulator --in=<path>" << std::endl << std::endl;
-
-    std::cout << "Set the output log file (default is the input path+.log)" << std::endl;
-    std::cout << "\tcodeGSimulator --outLog=<path>" << std::endl << std::endl;
-
-    std::cout << "Don't write a log file (default a log file is writed)" << std::endl;
-    std::cout << "\tcodeGSimulator --noLog" << std::endl << std::endl;
-
-    std::cout << "Print the version (and do nothing else)" << std::endl;
-    std::cout << "\tcodeGSimulator --version" << std::endl << std::endl;
-
-    std::cout << "Print the help page (and do nothing else)" << std::endl;
-    std::cout << "\tcodeGSimulator --help" << std::endl << std::endl;
-}
 void printVersion()
 {
     std::cout << "codeGSimulator created by Guillaume Guillet, version " << CGS_VERSION_MAJOR << "." << CGS_VERSION_MINOR << std::endl;
@@ -68,57 +53,27 @@ int main(int argc, char **argv)
 
     fs::path fileInPath;
     fs::path fileLogOutPath;
-
-    std::vector<std::string> commands(argv, argv + argc);
-
-    if (commands.size() <= 1)
-    {
-        printHelp();
-        return -1;
-    }
-
     bool writeLogFile = true;
 
-    for (std::size_t i=1; i<commands.size(); ++i)
+    CLI::App app{"A simulator specifically built for the homemade language codeG", "codeGSimulator"};
+
+    app.add_flag_callback("--version", [](){
+        printVersion();
+        throw CLI::Success{};
+    }, "Print the version (and do nothing else)");
+
+    app.add_flag("!--noLog", writeLogFile, "Don't write a log file (default a log file is written)");
+
+    app.add_option("--in", fileInPath, "Set the input file to be read and simulated")->required(true);
+    app.add_option("--outLog", fileLogOutPath, "Set the output log file (default is the input path+.log)");
+
+    try
     {
-        //Commands
-        if ( commands[i] == "--help")
-        {
-            printHelp();
-            return 0;
-        }
-        if ( commands[i] == "--version")
-        {
-            printVersion();
-            return 0;
-        }
-        if ( commands[i] == "--noLog")
-        {
-            writeLogFile = false;
-            continue;
-        }
-
-        //Commands with an argument
-        std::vector<std::string> splitedCommand;
-        codeg::Split(commands[i], splitedCommand, '=');
-
-        if (splitedCommand.size() == 2)
-        {
-            if ( splitedCommand[0] == "--in")
-            {
-                fileInPath = splitedCommand[1];
-                continue;
-            }
-            if ( splitedCommand[0] == "--outLog")
-            {
-                fileLogOutPath = splitedCommand[1];
-                continue;
-            }
-        }
-
-        //Unknown command
-        std::cout << "Unknown command : \""<< commands[i] <<"\" !" << std::endl;
-        return -1;
+        app.parse(argc, argv);
+    }
+    catch (const CLI::ParseError& e)
+    {
+        return app.exit(e);
     }
 
     if ( fileInPath.empty() )
@@ -154,6 +109,18 @@ int main(int argc, char **argv)
 
     std::string stringLine;
 
+    bool running = true;
+
+    struct Command
+    {
+        std::string _name;
+        std::string _usage;
+        std::string _description;
+        std::size_t _minArguments;
+        std::size_t _maxArguments;
+        std::function<bool(const std::vector<std::string>&)> _func;
+    };
+
     try
     {
         ConsoleInfo << "Reading the file ..." << std::endl;
@@ -182,41 +149,18 @@ int main(int argc, char **argv)
 
         ConsoleInfo << "ok !" << std::endl;
 
-        ConsoleInfo << "Waiting user input" << std::endl;
-
-        std::string userCommand;
-        do
-        {
-            std::cout << ">";
-            std::getline(std::cin, userCommand);
-
-            userCommand = codeg::RemoveExtraSpace(userCommand);
-            std::vector<std::string> splitedUserCommand;
-            codeg::Split(userCommand, splitedUserCommand, ' ');
-
-            ConsoleInfo << "user command : \"" << userCommand << "\"" << std::endl;
-
-            if (userCommand == "help")
-            {
-                std::cout << "\texit -> exit the application\n"
-                          << "\tread pc -> read the program counter\n"
-                          << "\tread mem [\"m\"/\"p\"] [slot] [address] -> read in a motherboard/processor memory slot at address\n"
-                          << "\tread bus [name] -> read a specific bus value\n"
-                          << "\tread bus -> read all bus value\n"
-                          << "\tinfo [\"motherboard\"] -> print information about a specific peripheral\n"
-                          << "\texecute [cycle] -> execute a number of clock cycle (clock until sync)\n"
-                          << "\tgoto [address] -> execute a number of clock cycle (clock until sync) until the address is reached (or max iterations)\n"
-                          << "\treset -> do a hard reset\n"
-                          << "\tflushUart -> clear the output buffer of the uart card and print the result\n";
-            }
-            else if (userCommand == "reset")
-            {
+        std::vector<Command> commands = {
+            {"exit", "exit", "exit the application", 0,0, [&]([[maybe_unused]] const std::vector<std::string>& args){
+                running = false;
+                return true;
+            }},
+            {"reset", "reset", "do a hard reset on motherboard", 0,0, [&]([[maybe_unused]] const std::vector<std::string>& args){
                 motherboard.hardReset();
                 ConsoleInfo << "pc: "<< motherboard.getProgramCounter() <<" ("
-                                     << codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) << ")";
-            }
-            else if (userCommand == "flushUart")
-            {
+                            << codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) << ")" << std::endl;
+                return true;
+            }},
+            {"flushUart", "flushUart", "clear the output buffer of the uart card and print the result", 0,0, [&]([[maybe_unused]] const std::vector<std::string>& args){
                 if (uartCard->getOutputBuffer().empty())
                 {
                     ConsoleWarning << "buffer is empty" << std::endl;
@@ -226,219 +170,238 @@ int main(int argc, char **argv)
                     ConsoleInfo << "buffer: \"" << uartCard->getOutputBuffer() << "\"" << std::endl;
                     uartCard->clearOutputBuffer();
                 }
-            }
-            else if (splitedUserCommand.size() > 1)
+                return true;
+            }},
+            {"read_pc", "read_pc", "read the program counter", 0,0, [&]([[maybe_unused]] const std::vector<std::string>& args){
+                ConsoleInfo << motherboard.getProgramCounter()
+                            << " ("<< codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) <<")"
+                            << std::endl;
+                return true;
+            }},
+            {"read_mem", R"(read_mem ["m"/"p"] [slot] [address])", "read the program counter", 3,3, [&]([[maybe_unused]] const std::vector<std::string>& args){
+                if (args[0] == "m")
+                {
+                    std::size_t slotValue = std::strtoul(args[1].c_str(), nullptr, 0);
+
+                    const codeg::MemoryModuleSlot* slot = motherboard.getMemorySlot(slotValue);
+                    if (slot)
+                    {
+                        if (slot->_mem)
+                        {
+                            codeg::MemoryAddress addressValue = std::strtoul(args[2].c_str(), nullptr, 0);
+
+                            uint8_t data;
+                            if ( slot->_mem->get(addressValue, data) )
+                            {
+                                ConsoleInfo << codeg::ValueToHex(data, 2) << std::endl;
+                            }
+                            else
+                            {
+                                ConsoleError << "address out of range (max: "<< slot->_mem->getMemorySize() <<")" << std::endl;
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            ConsoleError << "no memory plugged in this slot" << std::endl;
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        ConsoleError << "unknown slot " << args[1] << std::endl;
+                        return false;
+                    }
+                }
+                else if (args[0] == "p")
+                {
+                    std::size_t slotValue = std::strtoul(args[1].c_str(), nullptr, 0);
+
+                    const codeg::MemoryModuleSlot* slot = motherboard._processor.getMemorySlot(slotValue);
+                    if (slot)
+                    {
+                        if (slot->_mem)
+                        {
+                            codeg::MemoryAddress addressValue = std::strtoul(args[2].c_str(), nullptr, 0);
+
+                            uint8_t data;
+                            if ( slot->_mem->get(addressValue, data) )
+                            {
+                                ConsoleInfo << codeg::ValueToHex(data, 2) << std::endl;
+                            }
+                            else
+                            {
+                                ConsoleError << "address out of range (max: "<< slot->_mem->getMemorySize() <<")" << std::endl;
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            ConsoleError << "no memory plugged in this slot" << std::endl;
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        ConsoleError << "unknown slot " << args[1] << std::endl;
+                        return false;
+                    }
+                }
+                else
+                {
+                    ConsoleError << R"(please put "m" (motherboard) or "p" (processor))" << std::endl;
+                    return false;
+                }
+                return true;
+            }},
+            {"read_bus", "read_bus ([name])", "read a specific bus value, or all of them", 0,1, [&]([[maybe_unused]] const std::vector<std::string>& args){
+                if (args.size() == 1)
+                {
+                    if ( motherboard._processor._busses.exist(args[0]) )
+                    {
+                        const codeg::Bus& bus = motherboard._processor._busses.get(args[0]);
+                        ConsoleInfo << "["<< args[0] <<"] = "<< bus.get()
+                                    <<" ("<< codeg::ValueToHex(bus.get(), 8, true) <<")" << std::endl;
+                    }
+                    else
+                    {
+                        ConsoleError << "bus ["<< args[0] <<"] doesn't exist" << std::endl;
+                        return false;
+                    }
+                }
+                else
+                {
+                    for (const auto& bus : motherboard._processor._busses)
+                    {
+                        ConsoleInfo << "["<< bus.first <<"] = "<< bus.second.get()
+                                    <<" ("<< codeg::ValueToHex(bus.second.get(), 8, true) <<")" << std::endl;
+                    }
+                }
+                return true;
+            }},
+            {"info", "info [\"motherboard\"]", "print information about a specific peripheral", 1,1, [&]([[maybe_unused]] const std::vector<std::string>& args){
+                if (args[0] == "motherboard")
+                {
+                    ConsoleInfo << "Name: --NAME--\n";
+                    ConsoleInfo << "Peripheral slot size: " << motherboard.getPeripheralSlotSize() << '\n';
+                    ConsoleInfo << "Memory slot size: " << motherboard.getMemorySlotSize() << " with " << 0 << " sources slot\n";
+                    ConsoleInfo << "Program counter: " << motherboard.getProgramCounter() << std::endl;
+                }
+                else
+                {
+                    return false;
+                }
+                return true;
+            }},
+            {"execute", "execute [cycle]", "execute a number of clock cycle (clock until sync)", 1,1, [&]([[maybe_unused]] const std::vector<std::string>& args){
+                std::size_t clockCycle = std::strtoul(args[0].c_str(), nullptr, 0);
+
+                for (std::size_t i=0; i<clockCycle; ++i)
+                {
+                    if ( !motherboard._processor.clockUntilSync(20) )
+                    {
+                        ConsoleWarning << "max iteration reached !" << std::endl;
+                        break;
+                    }
+                }
+                ConsoleInfo << "pc: "<< motherboard.getProgramCounter()
+                            <<" ("<< codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) <<")"
+                            << std::endl;
+                return true;
+            }},
+            {"goto", "goto [address]", "execute a number of clock cycle (clock until sync) until the address is reached (or max iterations)", 1,1, [&]([[maybe_unused]] const std::vector<std::string>& args){
+                codeg::MemoryAddress memoryAddress = std::strtoul(args[0].c_str(), nullptr, 0);
+                bool reached = false;
+
+                for (std::size_t i=0; i<5000; ++i)
+                {
+                    if (motherboard.getProgramCounter() == memoryAddress)
+                    {
+                        ConsoleInfo << "memory reached !" << std::endl;
+                        reached = true;
+                        break;
+                    }
+
+                    if ( !motherboard._processor.clockUntilSync(20) )
+                    {
+                        ConsoleWarning << "clock cycle: max iteration reached !" << std::endl;
+                        break;
+                    }
+                }
+                if (!reached)
+                {
+                    ConsoleError << "max iteration reached !" << std::endl;
+                    ConsoleInfo << "pc: "<< motherboard.getProgramCounter()
+                                <<" ("<< codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) <<")"
+                                << std::endl;
+                }
+                return true;
+            }}
+        };
+
+        ConsoleInfo << "Waiting user input" << std::endl;
+
+        std::string commandLine;
+        std::string commandName;
+        std::vector<std::string> commandArgs;
+        do
+        {
+            std::cout << ">";
+            std::getline(std::cin, commandLine);
+
+            commandLine = codeg::RemoveExtraSpace(commandLine);
+
+            codeg::Split(commandLine, commandArgs, ' ');
+
+            if (commandArgs.empty())
             {
-                if (splitedUserCommand[0] == "read")
+                continue;
+            }
+
+            commandName = std::move(commandArgs.front());
+            commandArgs.erase(commandArgs.begin());
+
+            ConsoleInfo << "user command: \"" << commandName << "\"" << std::endl;
+
+            bool knownCommand = false;
+
+            if (commandName == "help")
+            {
+                knownCommand = true;
+
+                for (auto& command : commands)
                 {
-                    if (splitedUserCommand[1] == "pc")
-                    {
-                        if (splitedUserCommand.size() == 2)
-                        {
-                            ConsoleInfo << motherboard.getProgramCounter()
-                                        << " ("<< codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) <<")"
-                                        << std::endl;
-                        }
-                        else
-                        {
-                            ConsoleError << "usage: read pc" << std::endl;
-                        }
-                    }
-                    else if (splitedUserCommand[1] == "mem")
-                    {
-                        if (splitedUserCommand.size() == 5)
-                        {
-                            if (splitedUserCommand[2] == "m")
-                            {
-                                std::size_t slotValue = std::strtoul(splitedUserCommand[3].c_str(), nullptr, 0);
-
-                                const codeg::MemoryModuleSlot* slot = motherboard.getMemorySlot(slotValue);
-                                if (slot)
-                                {
-                                    if (slot->_mem)
-                                    {
-                                        codeg::MemoryAddress addressValue = std::strtoul(splitedUserCommand[4].c_str(), nullptr, 0);
-
-                                        uint8_t data;
-                                        if ( slot->_mem->get(addressValue, data) )
-                                        {
-                                            ConsoleInfo << codeg::ValueToHex(data, 2) << std::endl;
-                                        }
-                                        else
-                                        {
-                                            ConsoleError << "address out of range (max: "<< slot->_mem->getMemorySize() <<")" << std::endl;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        ConsoleError << "no memory plugged in this slot" << std::endl;
-                                    }
-                                }
-                                else
-                                {
-                                    ConsoleError << "unknown slot " << splitedUserCommand[3] << std::endl;
-                                }
-                            }
-                            else if (splitedUserCommand[2] == "p")
-                            {
-                                std::size_t slotValue = std::strtoul(splitedUserCommand[3].c_str(), nullptr, 0);
-
-                                const codeg::MemoryModuleSlot* slot = motherboard._processor.getMemorySlot(slotValue);
-                                if (slot)
-                                {
-                                    if (slot->_mem)
-                                    {
-                                        codeg::MemoryAddress addressValue = std::strtoul(splitedUserCommand[4].c_str(), nullptr, 0);
-
-                                        uint8_t data;
-                                        if ( slot->_mem->get(addressValue, data) )
-                                        {
-                                            ConsoleInfo << codeg::ValueToHex(data, 2) << std::endl;
-                                        }
-                                        else
-                                        {
-                                            ConsoleError << "address out of range (max: "<< slot->_mem->getMemorySize() <<")" << std::endl;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        ConsoleError << "no memory plugged in this slot" << std::endl;
-                                    }
-                                }
-                                else
-                                {
-                                    ConsoleError << "unknown slot " << splitedUserCommand[3] << std::endl;
-                                }
-                            }
-                            else
-                            {
-                                ConsoleError << "please put \"m\" (motherboard) or \"p\" (processor)" << std::endl;
-                            }
-                        }
-                        else
-                        {
-                            ConsoleError << "usage: read mem [\"m\"/\"p\"] [slot] [address]" << std::endl;
-                        }
-                    }
-                    else if (splitedUserCommand[1] == "bus")
-                    {
-                        if (splitedUserCommand.size() == 3)
-                        {
-                            if ( motherboard._processor._busses.exist(splitedUserCommand[2]) )
-                            {
-                                const codeg::Bus& bus = motherboard._processor._busses.get(splitedUserCommand[2]);
-                                ConsoleInfo << "["<< splitedUserCommand[2] <<"] = "<< bus.get()
-                                            <<" ("<< codeg::ValueToHex(bus.get(), 8, true) <<")" << std::endl;
-                            }
-                            else
-                            {
-                                ConsoleError << "bus ["<< splitedUserCommand[2] <<"] doesn't exist" << std::endl;
-                            }
-                        }
-                        else if (splitedUserCommand.size() == 2)
-                        {
-                            for (const auto& bus : motherboard._processor._busses)
-                            {
-                                ConsoleInfo << "["<< bus.first <<"] = "<< bus.second.get()
-                                            <<" ("<< codeg::ValueToHex(bus.second.get(), 8, true) <<")" << std::endl;
-                            }
-                        }
-                        else
-                        {
-                            ConsoleError << "usage: read bus ([name])" << std::endl;
-                        }
-                    }
-                    else
-                    {
-                        ConsoleError << "usage: read [\"pc\"/\"mem\"/\"bus\"] ..." << std::endl;
-                    }
-                }
-                else if (splitedUserCommand[0] == "info")
-                {
-                    if (splitedUserCommand.size() == 2)
-                    {
-                        if (splitedUserCommand[1] == "motherboard")
-                        {
-                            ConsoleInfo << "Name: --NAME--\n";
-                            ConsoleInfo << "Peripheral slot size: " << motherboard.getPeripheralSlotSize() << '\n';
-                            ConsoleInfo << "Memory slot size: " << motherboard.getMemorySlotSize() << " with " << 0 << " sources slot\n";
-                            ConsoleInfo << "Program counter: " << motherboard.getProgramCounter() << std::endl;
-                        }
-                        else
-                        {
-                            ConsoleError << "usage: info [\"motherboard\"]" << std::endl;
-                        }
-                    }
-                    else
-                    {
-                        ConsoleError << "usage: info [\"motherboard\"]" << std::endl;
-                    }
-                }
-                else if (splitedUserCommand[0] == "execute")
-                {
-                    if (splitedUserCommand.size() == 2)
-                    {
-                        std::size_t clockCycle = std::strtoul(splitedUserCommand[1].c_str(), nullptr, 0);
-
-                        for (std::size_t i=0; i<clockCycle; ++i)
-                        {
-                            if ( !motherboard._processor.clockUntilSync(20) )
-                            {
-                                ConsoleError << "max iteration reached !" << std::endl;
-                                break;
-                            }
-                        }
-                        ConsoleInfo << "pc: "<< motherboard.getProgramCounter()
-                                             <<" ("<< codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) <<")"
-                                             << std::endl;
-                    }
-                    else
-                    {
-                        ConsoleError << "usage: execute [clock cycle]" << std::endl;
-                    }
-                }
-                else if (splitedUserCommand[0] == "goto")
-                {
-                    if (splitedUserCommand.size() == 2)
-                    {
-                        codeg::MemoryAddress memoryAddress = std::strtoul(splitedUserCommand[1].c_str(), nullptr, 0);
-                        bool reached = false;
-
-                        for (std::size_t i=0; i<5000; ++i)
-                        {
-                            if (motherboard.getProgramCounter() == memoryAddress)
-                            {
-                                ConsoleInfo << "memory reached !" << std::endl;
-                                reached = true;
-                                break;
-                            }
-
-                            if ( !motherboard._processor.clockUntilSync(20) )
-                            {
-                                ConsoleError << "clock cycle: max iteration reached !" << std::endl;
-                                break;
-                            }
-                        }
-                        if (!reached)
-                        {
-                            ConsoleError << "max iteration reached !" << std::endl;
-                            ConsoleInfo << "pc: "<< motherboard.getProgramCounter()
-                                        <<" ("<< codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) <<")"
-                                        << std::endl;
-                        }
-                    }
-                    else
-                    {
-                        ConsoleError << "usage: goto [address]" << std::endl;
-                    }
+                    ConsoleInfo << '\t' << command._name << ", " << command._usage << " <- " << command._description << std::endl;
                 }
             }
             else
             {
-                ConsoleWarning << "unknown command or exit!" << std::endl;
+                for (auto& command: commands)
+                {
+                    if (command._name == commandName)
+                    {
+                        knownCommand = true;
+
+                        if (commandArgs.size() < command._minArguments ||
+                            commandArgs.size() > command._maxArguments)
+                        {
+                            ConsoleError << "bad arguments size: " << command._minArguments << " >= "
+                                         << commandArgs.size() << " <= " << command._maxArguments << std::endl;
+                            ConsoleError << "usage: " << command._usage << std::endl;
+                        }
+                        else if (!command._func(commandArgs))
+                        {
+                            ConsoleError << "usage: " << command._usage << std::endl;
+                        }
+                        break;
+                    }
+                }
             }
-        }
-        while (userCommand != "exit");
+            if (!knownCommand)
+            {
+                ConsoleWarning << "unknown command" << std::endl;
+            }
+        } while (running);
     }
     catch (const codeg::Error& e)
     {

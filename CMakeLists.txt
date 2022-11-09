@@ -9,6 +9,16 @@ cmake_policy(SET CMP0076 NEW) #target_sources
 #Enabling CTest
 #enable_testing()
 
+include(FetchContent)
+FetchContent_Declare(
+        cli11
+        GIT_REPOSITORY https://github.com/CLIUtils/CLI11
+        GIT_TAG        v2.3.1
+)
+
+FetchContent_MakeAvailable(cli11)
+include_directories(${CLI11_SOURCE_DIR}/include)
+
 #Variables
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/debug)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release)
