@@ -61,6 +61,11 @@ uint8_t GCM_5_1_SPS1::updateDataSource()
     return memData;
 }
 
+std::string GCM_5_1_SPS1::getType()
+{
+    return "GCM_5_1_SPS1";
+}
+
 void GCM_5_1_SPS1::signal_ADDSRC_CLK(bool val)
 {
     if (val)

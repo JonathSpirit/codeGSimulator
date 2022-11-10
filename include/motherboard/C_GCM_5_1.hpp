@@ -17,7 +17,7 @@
 #ifndef C_GCM_5_1_HPP_INCLUDED
 #define C_GCM_5_1_HPP_INCLUDED
 
-#include "motherboard/C_motherboard.hpp"
+#include "motherboard/motherboards.hpp"
 #include "processor/C_GP8B_5_1.hpp"
 #include "peripheral/C_peripheral.hpp"
 
@@ -41,6 +41,8 @@ public:
     void hardReset() override;
 
     uint8_t updateDataSource() override;
+
+    [[nodiscard]] std::string getType() override;
 
     void signal_ADDSRC_CLK(bool val);
     void signal_JMPSRC_CLK(bool val);

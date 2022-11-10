@@ -46,9 +46,48 @@ public:
 
     virtual uint8_t updateDataSource() = 0;
 
+    [[nodiscard]] virtual std::string getType() = 0;
+
 protected:
     codeg::MemoryAddress _g_programCounter{0};
 };
+
+class MotherboardClassTypeBase
+{
+public:
+    MotherboardClassTypeBase(std::string type) :
+            _g_type(std::move(type))
+    {}
+    virtual ~MotherboardClassTypeBase() = default;
+
+    [[nodiscard]] virtual Motherboard* create() const = 0;
+
+    const std::string& getType()
+    {
+        return this->_g_type;
+    }
+
+protected:
+    std::string _g_type;
+};
+template<class T>
+class MotherboardClassType : public MotherboardClassTypeBase
+{
+public:
+    MotherboardClassType() :
+            MotherboardClassTypeBase(T{}.getType())
+    {}
+    ~MotherboardClassType() override = default;
+
+    [[nodiscard]] Motherboard* create() const override
+    {
+        return new T{};
+    }
+};
+
+void RegisterNewMotherboardType(std::unique_ptr<MotherboardClassTypeBase>&& classType);
+Motherboard* GetNewMotherboard(const std::string& type);
+std::size_t GetMotherboardTypeSize();
 
 }//end codeg
 

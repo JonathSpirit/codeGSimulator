@@ -52,6 +52,7 @@ int main(int argc, char **argv)
     }
 
     codeg::RegisterNewMemoryModuleType(std::make_unique<codeg::MemoryModuleClassType<codeg::MM1> >());
+    codeg::RegisterNewMotherboardType(std::make_unique<codeg::MotherboardClassType<codeg::GCM_5_1_SPS1> >());
 
     fs::path fileInPath;
     fs::path fileLogOutPath;
@@ -283,7 +284,7 @@ int main(int argc, char **argv)
                 }
                 return true;
             }},
-            {"unplug", R"(unplug ["m"/"p"] [slot])", "unplug a memory module on the motherboard/processor", 2,2, [&]([[maybe_unused]] const std::vector<std::string>& args){
+            {"unplug_mem", R"(unplug_mem ["m"/"p"] [slot])", "unplug a memory module on the motherboard/processor", 2,2, [&]([[maybe_unused]] const std::vector<std::string>& args){
                 if (args[0] == "m")
                 {
                     std::size_t slotValue = std::strtoul(args[1].c_str(), nullptr, 0);
@@ -325,7 +326,7 @@ int main(int argc, char **argv)
                 }
                 return true;
             }},
-            {"plug", R"(plug ["m"/"p"] [slot] [index])", "plug a memory module on the motherboard/processor for the unplugged list", 3,3, [&]([[maybe_unused]] const std::vector<std::string>& args){
+            {"plug_mem", R"(plug_mem ["m"/"p"] [slot] [index])", "plug a memory module on the motherboard/processor for the unplugged list", 3,3, [&]([[maybe_unused]] const std::vector<std::string>& args){
                 if (args[0] == "m")
                 {
                     std::size_t slotValue = std::strtoul(args[1].c_str(), nullptr, 0);
@@ -417,9 +418,9 @@ int main(int argc, char **argv)
             {"info", R"(info ["motherboard"/"memUnplugged"])", "print information about peripherals", 1,1, [&]([[maybe_unused]] const std::vector<std::string>& args){
                 if (args[0] == "motherboard")
                 {
-                    ConsoleInfo << "Name: --NAME--\n";
-                    ConsoleInfo << "Peripheral slot size: " << motherboard.getPeripheralSlotSize() << '\n';
-                    ConsoleInfo << "Memory slot size: " << motherboard.getMemorySlotSize() << " with " << motherboard.getSourceCapableSlotCount() << " sources slot\n";
+                    ConsoleInfo << "type: "<< motherboard.getType() <<"\n";
+                    ConsoleInfo << "peripheral slot size: " << motherboard.getPeripheralSlotSize() << '\n';
+                    ConsoleInfo << "memory slot size: " << motherboard.getMemorySlotSize() << " with " << motherboard.getSourceCapableSlotCount() << " sources slot\n";
                     for (std::size_t i=0; i<motherboard.getMemorySlotSize(); ++i)
                     {
                         const auto* slot = motherboard.getMemorySlot(i);
