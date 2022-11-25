@@ -30,11 +30,11 @@ GCM_5_1_SPS1::GCM_5_1_SPS1()
     this->_g_memorySlots.push_back( {nullptr, "MM1", 3, true, true} );
     this->_g_memorySlots.push_back( {nullptr, "MM1", 3, true, true} );
 
-    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).attach(this, &codeg::GCM_5_1_SPS1::signal_ADDSRC_CLK);
-    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_JMPSRC_CLK).attach(this, &codeg::GCM_5_1_SPS1::signal_JMPSRC_CLK);
-    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_PERIPHERAL_CLK).attach(this, &codeg::GCM_5_1_SPS1::signal_PERIPHERAL_CLK);
-    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_SELECTING_RBEXT1).attach(this, &codeg::GCM_5_1_SPS1::signal_SELECTING_RBEXT1);
-    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_SELECTING_RBEXT2).attach(this, &codeg::GCM_5_1_SPS1::signal_SELECTING_RBEXT2);
+    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).attach([&](bool val){codeg::GCM_5_1_SPS1::signal_ADDSRC_CLK(val);});
+    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_JMPSRC_CLK).attach([&](bool val){codeg::GCM_5_1_SPS1::signal_JMPSRC_CLK(val);});
+    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_PERIPHERAL_CLK).attach([&](bool val){codeg::GCM_5_1_SPS1::signal_PERIPHERAL_CLK(val);});
+    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_SELECTING_RBEXT1).attach([&](bool val){codeg::GCM_5_1_SPS1::signal_SELECTING_RBEXT1(val);});
+    this->_processor._signals.get(CG_PROC_SPS1_SIGNAL_SELECTING_RBEXT2).attach([&](bool val){codeg::GCM_5_1_SPS1::signal_SELECTING_RBEXT2(val);});
 }
 
 void GCM_5_1_SPS1::softReset()
@@ -113,7 +113,7 @@ void MemoryController::update(codeg::Motherboard& motherboard, codeg::BusMap& bu
         uint8_t bwrite1 = busses.get(CG_PROC_SPS1_BUS_BWRITE1).get();
         uint8_t bwrite2 = busses.get(CG_PROC_SPS1_BUS_BWRITE2).get();
 
-        if (signals.get(CG_PROC_SPS1_SIGNAL_PERIPHERAL_CLK)._value)
+        if (signals.get(CG_PROC_SPS1_SIGNAL_PERIPHERAL_CLK).getValue())
         {
             if (bwrite1 & CG_PERIPHERAL_MEMORY_CONTROLLER_ADDRESS0_MASK)
             {

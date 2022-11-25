@@ -103,6 +103,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_BINARY_DIR}")
 target_sources(${PROJECT_NAME} PUBLIC "src/main.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_console.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/C_string.cpp")
+target_sources(${PROJECT_NAME} PUBLIC "src/C_signal.cpp")
 
 target_sources(${PROJECT_NAME} PUBLIC "src/memoryModule/C_MM1.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/memoryModule/memoryModules.cpp")

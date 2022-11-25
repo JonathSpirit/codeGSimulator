@@ -29,7 +29,7 @@ void UART_peripheral_card_A_1_1::update([[maybe_unused]] codeg::Motherboard& mot
         uint8_t bwrite1 = busses.get(CG_PROC_SPS1_BUS_BWRITE1).get();
         uint8_t bwrite2 = busses.get(CG_PROC_SPS1_BUS_BWRITE2).get();
 
-        if ( signals.get(CG_PROC_SPS1_SIGNAL_PERIPHERAL_CLK)._value )
+        if ( signals.get(CG_PROC_SPS1_SIGNAL_PERIPHERAL_CLK).getValue() )
         {
             if (bwrite2 & CG_PERIPHERAL_UART_RST_RX_FLAG_MASK)
             {

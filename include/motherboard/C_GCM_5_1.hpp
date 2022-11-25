@@ -31,7 +31,7 @@
 namespace codeg
 {
 
-class GCM_5_1_SPS1 : public codeg::Motherboard, public codeg::SignalCapable
+class GCM_5_1_SPS1 : public codeg::Motherboard
 {
 public:
     GCM_5_1_SPS1();
