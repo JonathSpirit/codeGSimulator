@@ -14,8 +14,6 @@
 // limitations under the License.                                              //
 /////////////////////////////////////////////////////////////////////////////////
 
-#include "main.hpp"
-
 #include <iostream>
 #include <fstream>
 #include <vector>

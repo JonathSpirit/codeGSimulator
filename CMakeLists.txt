@@ -103,7 +103,6 @@ target_sources(${PROJECT_NAME} PUBLIC "src/processor/C_GP8B_5_1.cpp")
 target_sources(${PROJECT_NAME} PUBLIC "src/processor/C_ALUminium_1_1.cpp")
 
 #Header files
-target_sources(${PROJECT_NAME} PUBLIC "include/main.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_console.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_string.hpp")
 target_sources(${PROJECT_NAME} PUBLIC "include/C_bus.hpp")
