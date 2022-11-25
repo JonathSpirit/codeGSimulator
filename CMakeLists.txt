@@ -64,10 +64,9 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # using Clang
     add_compile_options(-Wall -Wextra -pedantic ${TARGET_ARCH_FLAG})
     set(debug_flags -g)
-    set(release_flags -O3 -static)
+    set(release_flags -O3)
     add_compile_options("$<$<CONFIG:DEBUG>:${debug_flags}>")
     add_compile_options("$<$<CONFIG:RELEASE>:${release_flags}>")
-    add_link_options("$<$<CONFIG:RELEASE>:-lstdc++>")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # using Visual Studio C++
     add_compile_options(/EHsc)
@@ -79,10 +78,9 @@ else()
     # using GCC
     add_compile_options(-Wall -Wextra -pedantic ${TARGET_ARCH_FLAG})
     set(debug_flags -g)
-    set(release_flags -O3 -s -static)
+    set(release_flags -O3 -s)
     add_compile_options($<$<CONFIG:DEBUG>:${debug_flags}>)
     add_compile_options("$<$<CONFIG:RELEASE>:${release_flags}>")
-    add_link_options("$<$<CONFIG:RELEASE>:-lstdc++>")
 endif()
 
 #Executable
