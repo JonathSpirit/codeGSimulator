@@ -62,21 +62,25 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 #Set compiler options
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # using Clang
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic ${TARGET_ARCH_FLAG}")
-    
-    set(CMAKE_CXX_FLAGS_DEBUG "-g")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -static")
+    add_compile_options(-Wall -Wextra -pedantic ${TARGET_ARCH_FLAG})
+    set(debug_flags -g)
+    set(release_flags -O3 -static)
+    add_compile_options("$<$<CONFIG:DEBUG>:${debug_flags}>")
+    add_compile_options("$<$<CONFIG:RELEASE>:${release_flags}>")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # using Visual Studio C++
-    set(CMAKE_CXX_FLAGS "/EHsc")
-    set(CMAKE_CXX_FLAGS_DEBUG "/DEBUG")
-    set(CMAKE_CXX_FLAGS_RELEASE "/O2")
+    add_compile_options(/EHsc)
+    set(debug_flags /DEBUG)
+    set(release_flags /O2)
+    add_compile_options("$<$<CONFIG:DEBUG>:${debug_flags}>")
+    add_compile_options("$<$<CONFIG:RELEASE>:${release_flags}>")
 else()
     # using GCC
-    set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic ${TARGET_ARCH_FLAG}")
-    
-    set(CMAKE_CXX_FLAGS_DEBUG "-g")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -s -static")
+    add_compile_options(-Wall -Wextra -pedantic ${TARGET_ARCH_FLAG})
+    set(debug_flags -g)
+    set(release_flags -O3 -s -static)
+    add_compile_options($<$<CONFIG:DEBUG>:${debug_flags}>)
+    add_compile_options("$<$<CONFIG:RELEASE>:${release_flags}>")
 endif()
 
 #Executable

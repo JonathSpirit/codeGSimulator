@@ -128,15 +128,22 @@ int main(int argc, char **argv)
     {
         ConsoleInfo << "Reading the file ..." << std::endl;
 
-        auto* buffer = new uint8_t[0xFFFF];
-        auto finalSize = fileIn.readsome(reinterpret_cast<char*>(buffer), 0xFFFF);
+        fileIn.seekg(0, std::ifstream::end);
+        auto fileSize = static_cast<std::streamsize>(fileIn.tellg());
+        fileIn.seekg(0, std::ifstream::beg);
 
-        ConsoleInfo << "Data size : " << finalSize << " bytes" << std::endl;
+        std::unique_ptr<uint8_t[]> buffer{new uint8_t[fileSize]};
+        if ( !fileIn.read(reinterpret_cast<char*>(buffer.get()), fileSize) )
+        {
+            ConsoleFatal << "Can't read data from the file " << fileInPath << std::endl;
+            return -1;
+        }
+
+        ConsoleInfo << "Data size : " << fileSize << " bytes" << std::endl;
 
         ConsoleInfo << "Creating memory module size for the source ..." << std::endl;
         std::shared_ptr<codeg::MemoryModule> memory = std::make_shared<codeg::MM1_64k>();
-        memory->set(0, buffer, finalSize);
-        delete[] buffer;
+        memory->set(0, buffer.get(), fileSize);
 
         ConsoleInfo << "Creating the motherboard and plug the memory module ..." << std::endl;
         codeg::GCM_5_1_SPS1 motherboard;
