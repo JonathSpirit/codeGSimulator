@@ -52,6 +52,13 @@ if (NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     endif()
 endif()
 
+#Check for architecture
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(ARCH 64)
+else()
+    set(ARCH 32)
+endif()
+
 #Configure header file
 configure_file(CMakeConfig.hpp.in CMakeConfig.hpp)
 
@@ -64,9 +71,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # using Clang
     add_compile_options(-Wall -Wextra -pedantic ${TARGET_ARCH_FLAG})
     set(debug_flags -g)
-    set(release_flags -O3)
+    set(release_flags -O3 -static)
     add_compile_options("$<$<CONFIG:DEBUG>:${debug_flags}>")
     add_compile_options("$<$<CONFIG:RELEASE>:${release_flags}>")
+    add_link_options(${TARGET_ARCH_FLAG})
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # using Visual Studio C++
     add_compile_options(/EHsc)
@@ -78,9 +86,10 @@ else()
     # using GCC
     add_compile_options(-Wall -Wextra -pedantic ${TARGET_ARCH_FLAG})
     set(debug_flags -g)
-    set(release_flags -O3 -s)
+    set(release_flags -O3 -s -static)
     add_compile_options($<$<CONFIG:DEBUG>:${debug_flags}>)
     add_compile_options("$<$<CONFIG:RELEASE>:${release_flags}>")
+    add_link_options(${TARGET_ARCH_FLAG})
 endif()
 
 #Executable
