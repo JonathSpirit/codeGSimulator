@@ -67,6 +67,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(release_flags -O3 -static)
     add_compile_options("$<$<CONFIG:DEBUG>:${debug_flags}>")
     add_compile_options("$<$<CONFIG:RELEASE>:${release_flags}>")
+    add_link_options("$<$<CONFIG:RELEASE>:-lstdc++>")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # using Visual Studio C++
     add_compile_options(/EHsc)
@@ -81,6 +82,7 @@ else()
     set(release_flags -O3 -s -static)
     add_compile_options($<$<CONFIG:DEBUG>:${debug_flags}>)
     add_compile_options("$<$<CONFIG:RELEASE>:${release_flags}>")
+    add_link_options("$<$<CONFIG:RELEASE>:-lstdc++>")
 endif()
 
 #Executable
