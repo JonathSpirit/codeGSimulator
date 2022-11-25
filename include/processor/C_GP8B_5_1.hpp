@@ -26,7 +26,7 @@ namespace codeg
 class GP8B_5_1 : public codeg::ProcessorSPS1
 {
 public:
-    enum Stat
+    enum class Stats
     {
         STAT_SYNC_BIT,
         STAT_INSTRUCTION_SET,
@@ -44,13 +44,13 @@ public:
     void softReset() override;
     void hardReset() override;
 
-    bool isSync() const override;
+    [[nodiscard]] bool isSync() const override;
 
 private:
     void executeInstruction();
     void computeArgument();
 
-    Stat g_stat{STAT_SYNC_BIT};
+    Stats g_stat{Stats::STAT_SYNC_BIT};
     uint8_t g_instruction{0};
     uint8_t g_arguments{0};
 

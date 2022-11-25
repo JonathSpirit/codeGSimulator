@@ -70,7 +70,7 @@ public:
         {
             this->clock();
         }
-        while ((maxIteration--) && !this->isSync());
+        while ((--maxIteration) > 0 && !this->isSync());
 
         return maxIteration > 0;
     }

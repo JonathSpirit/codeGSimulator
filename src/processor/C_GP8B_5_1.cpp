@@ -29,18 +29,18 @@ void GP8B_5_1::clock()
 {
     switch (this->g_stat)
     {
-    case STAT_SYNC_BIT:
-        this->g_stat = STAT_INSTRUCTION_SET;
+    case Stats::STAT_SYNC_BIT:
+        this->g_stat = Stats::STAT_INSTRUCTION_SET;
         break;
-    case STAT_INSTRUCTION_SET:
+    case Stats::STAT_INSTRUCTION_SET:
         this->g_instruction = this->_busses.get(CG_PROC_SPS1_BUS_BDATASRC).get();
         this->_signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).call(true);
         this->_signals.get(CG_PROC_SPS1_SIGNAL_ADDSRC_CLK).call(false);
         this->computeArgument();
 
-        this->g_stat = STAT_EXECUTION;
+        this->g_stat = Stats::STAT_EXECUTION;
         break;
-    case STAT_EXECUTION:
+    case Stats::STAT_EXECUTION:
         this->executeInstruction();
 
         if ( static_cast<codeg::CodegBinaryRev1>(this->g_instruction&CG_CODEGBINARYREV1_OPCODE_MASK) != codeg::CodegBinaryRev1::OPCODE_JMPSRC_CLK )
@@ -52,23 +52,23 @@ void GP8B_5_1::clock()
             }
         }
 
-        this->g_stat = STAT_SYNC_BIT;
+        this->g_stat = Stats::STAT_SYNC_BIT;
         break;
     }
 }
 
 void GP8B_5_1::softReset()
 {
-    this->g_stat = STAT_SYNC_BIT;
+    this->g_stat = Stats::STAT_SYNC_BIT;
 }
 void GP8B_5_1::hardReset()
 {
-    this->g_stat = STAT_SYNC_BIT;
+    this->g_stat = Stats::STAT_SYNC_BIT;
 }
 
 bool GP8B_5_1::isSync() const
 {
-    return this->g_stat == STAT_SYNC_BIT;
+    return this->g_stat == Stats::STAT_SYNC_BIT;
 }
 
 void GP8B_5_1::executeInstruction()
