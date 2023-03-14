@@ -157,6 +157,8 @@ int main(int argc, char **argv)
         uartCard->setInputBuffer("test_hello\n");
         motherboard.peripheralPlug(0, uartCard);
 
+        motherboard.updateDataSource();
+
         ConsoleInfo << "ok !" << std::endl;
 
         std::vector<Command> commands = {
@@ -342,6 +344,7 @@ int main(int argc, char **argv)
                         if ( motherboard.memoryPlug(slotValue, unpluggedMemories[unpluggedIndex]) )
                         {
                             unpluggedMemories.erase(unpluggedMemories.begin()+unpluggedIndex);
+                            motherboard.updateDataSource();
                             ConsoleInfo << "correctly plugged the memory in the slot: " << slotValue << std::endl;
                         }
                         else

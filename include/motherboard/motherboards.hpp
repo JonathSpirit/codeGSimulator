@@ -34,6 +34,7 @@ public:
     bool setProgramCounter(codeg::MemoryAddress address)
     {
         this->_g_programCounter = address;
+        this->updateDataSource();
         return true;
     }
     [[nodiscard]] codeg::MemoryAddress getProgramCounter() const
