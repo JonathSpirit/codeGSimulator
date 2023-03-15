@@ -28,6 +28,8 @@
 #define CG_PERIPHERAL_MEMORY_CONTROLLER_ADDRESS1_MASK 0x10
 #define CG_PERIPHERAL_MEMORY_CONTROLLER_ADDRESS2_MASK 0x20
 
+#define CG_PERIPHERAL_MEMORY_SOURCESWITCH_MASK 0x01
+
 namespace codeg
 {
 
@@ -69,6 +71,17 @@ private:
     bool g_addressClock1Flag{false};
     bool g_addressClock2Flag{false};
     uint32_t g_address{0};
+};
+
+class MemorySourceSwitch : public codeg::Peripheral
+{
+public:
+    MemorySourceSwitch() = default;
+    ~MemorySourceSwitch() override = default;
+
+    void update(codeg::Motherboard& motherboard, codeg::BusMap& busses, codeg::SignalMap& signals) override;
+
+    [[nodiscard]] codeg::PeripheralType getType() const override;
 };
 
 }//end codeg

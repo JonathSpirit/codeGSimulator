@@ -26,6 +26,7 @@ GCM_5_1_SPS1::GCM_5_1_SPS1()
     this->_g_peripheralSlots.push_back( {nullptr, codeg::PeripheralType::TYPE_PP1, true} );
     this->_g_peripheralSlots.push_back( {nullptr, codeg::PeripheralType::TYPE_PP1, true} );
     this->_g_peripheralSlots.push_back( {std::make_shared<codeg::MemoryController>(), codeg::PeripheralType::TYPE_HARDWARE, false} );
+    this->_g_peripheralSlots.push_back( {std::make_shared<codeg::MemorySourceSwitch>(), codeg::PeripheralType::TYPE_HARDWARE, false} );
 
     this->_g_memorySlots.push_back( {nullptr, "MM1", 3, true, true} );
     this->_g_memorySlots.push_back( {nullptr, "MM1", 3, true, true} );
@@ -202,6 +203,34 @@ void MemoryController::update(codeg::Motherboard& motherboard, codeg::BusMap& bu
 }
 
 codeg::PeripheralType MemoryController::getType() const
+{
+    return codeg::PeripheralType::TYPE_HARDWARE;
+}
+
+///MemorySourceSwitch
+
+void MemorySourceSwitch::update(codeg::Motherboard& motherboard, codeg::BusMap& busses, codeg::SignalMap& signals)
+{
+    if ( this->isSelected() )
+    {
+        uint8_t bwrite1 = busses.get(CG_PROC_SPS1_BUS_BWRITE1).get();
+
+        if (signals.get(CG_PROC_SPS1_SIGNAL_PERIPHERAL_CLK).getValue())
+        {
+            if (bwrite1 & CG_PERIPHERAL_MEMORY_SOURCESWITCH_MASK)
+            {
+                motherboard.setMemorySource(1);
+            }
+            else
+            {
+                motherboard.setMemorySource(0);
+            }
+            motherboard.softReset();
+        }
+    }
+}
+
+codeg::PeripheralType MemorySourceSwitch::getType() const
 {
     return codeg::PeripheralType::TYPE_HARDWARE;
 }
