@@ -187,6 +187,7 @@ int main(int argc, char **argv)
             {"read_pc", "read_pc", "read the program counter", 0,0, [&]([[maybe_unused]] const std::vector<std::string>& args){
                 ConsoleInfo << motherboard.getProgramCounter()
                             << " ("<< codeg::ValueToHex(motherboard.getProgramCounter(), 8, true) <<")"
+                            << " [source index: "<< motherboard.getMemorySourceIndex() <<"]"
                             << std::endl;
                 return true;
             }},
